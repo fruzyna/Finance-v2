@@ -1,0 +1,10 @@
+extends layout
+
+block content
+  h1="Add Account"
+  form(name="add-account", method="post")
+    div.input
+      span.label Name: 
+      input(type="text", name="name")
+    div.actions
+      input(type="submit", value="Add")

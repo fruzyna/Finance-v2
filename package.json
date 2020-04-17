@@ -1,0 +1,28 @@
+{
+  "name": "finance-v2",
+  "version": "0.0.0",
+  "description": "A simple finance webapp, designed to run in Docker with MariaDB.",
+  "homepage": "https://mail929.com",
+  "bugs": {
+    "url": "https://github.com/mail929/Finance-v2/issues"
+  },
+  "license": "MPL-2.0",
+  "people": {
+    "name": "Liam Fruzyna",
+    "email": "liamfruzyna@gmail.com",
+    "url": "https://mail929.com"
+  },
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "http-errors": "~1.6.3",
+    "jade": "~1.11.0",
+    "morgan": "~1.9.1",
+    "mysql": "^2.18.1"
+  }
+}

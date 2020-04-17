@@ -1,0 +1,42 @@
+extends layout
+
+block content
+  h1="History"
+  form(name="search", method="get")
+    div.input
+      span.label Limit:
+      input(type="number", value="10", name="limit")
+    div.input
+      span.label Title: 
+      input(type="text", name="title")
+    div.input
+      span.label Location: 
+      input(type="text", name="location")
+    div.input
+      span.label Account: 
+      input(type="text", name="account")
+    div.input
+      span.label After: 
+      input(type="text", name="after")
+    div.input
+      span.label Before: 
+      input(type="text", name="before")
+    div.input
+      input(type="submit", value="Search")
+  table
+    thead
+      tr: th Title
+          th Location
+          th Date
+          th Amount
+          th Account
+          th Categories
+    tbody
+      each entry in entries
+        tr
+          td= entry.title
+          td= entry.location
+          td= entry.date
+          td= entry.amount
+          td= entry.name
+          td= entry.categories

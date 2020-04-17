@@ -1,0 +1,18 @@
+version: '3.6'
+
+services:
+  finance-db:
+    image: mariadb
+    container_name: finance-db
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    environment:
+      - MYSQL_ROOT_PASSWORD={root_password}
+      - MYSQL_PASSWORD={user_password}
+      - MYSQL_DATABASE={database_name}
+      - MYSQL_USER={username}
+    volumes:
+      - {mount_point}:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 3306:3306
+    restart: unless-stopped

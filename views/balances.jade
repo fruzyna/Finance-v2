@@ -1,0 +1,13 @@
+extends layout
+
+block content
+  h1="Balances"
+  table
+    thead
+      tr: th Account
+          th Balance
+    tbody
+      each account in accounts
+        tr
+          td= account.name
+          td= account["sum(amount)"]
