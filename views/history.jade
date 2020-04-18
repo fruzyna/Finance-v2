@@ -36,10 +36,15 @@ block content
           input(type="text", name="before")
       tr
         td
+          span.label Note: 
+        td
+          input(type="text", name="note")
+      tr
+        td
         td
           input(type="submit", value="Search")
   br
-  table#history(cellpadding="5px")
+  table(cellpadding="5px")
     thead
       tr: th Title
           th Location
@@ -47,6 +52,7 @@ block content
           th Amount
           th Account
           th Categories
+          th Note
     tbody
       each entry in entries
         tr.row
@@ -56,3 +62,4 @@ block content
           td.number= entry.amount
           td= entry.name
           td= entry.categories
+          td= entry.note

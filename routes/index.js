@@ -14,7 +14,7 @@ router.get('/', function(req, res, next)
   if (req.cookies.uid === undefined)  res.redirect('/login');
   else
   {
-    connection.query(`SELECT sum(amount) as total FROM transactions \
+    connection.query(`SELECT format(sum(amount), 2) as total FROM transactions \
                       WHERE user_id = "${req.cookies.uid}"`, function (error, results, fields)
                       {
                         if      (error)               res.send(error);
@@ -71,9 +71,10 @@ router.post('/add', function(req, res, next)
   location    = `"${req.body.location}"`;
   amount      = `"${req.body.amount}"`;
   categories  = `"${req.body.categories}"`;
+  note        = `"${req.body.note}"`;
   
-  connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, categories) \
-                    SELECT ${uid}, id, ${date}, ${title}, ${location}, ${amount}, ${categories} \
+  connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, categories, note) \
+                    SELECT ${uid}, id, ${date}, ${title}, ${location}, ${amount}, ${categories}, ${note} \
                     FROM accounts WHERE name = ${account}`, function (error, results, fields)
   {
     if (error)  res.send(error);
@@ -83,8 +84,8 @@ router.post('/add', function(req, res, next)
       if (req.body.transfer !== undefined && req.body.transfer != "")
       {
         amount = `"-${req.body.amount}"`;
-        connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, categories, linked_transaction) \
-                          SELECT ${uid}, a.id, ${date}, ${title}, ${location}, ${amount}, ${categories}, max(t.id) \
+        connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, categories, note, linked_transaction) \
+                          SELECT ${uid}, a.id, ${date}, ${title}, ${location}, ${amount}, ${categories}, ${note}, max(t.id) \
                           FROM accounts as a, transactions as t WHERE a.name = ${transfer} and t.user_id = ${uid}`, function (error, results, fields)
         {
           if (error)  res.send(error);
@@ -147,7 +148,7 @@ router.get('/accounts', function(req, res, next)
     return;
   }
 
-  connection.query(`SELECT sum(amount) as balance, name \
+  connection.query(`SELECT format(sum(amount), 2) as balance, name \
                     FROM transactions as t \
                     INNER JOIN accounts as a ON account_id = a.id \
                     WHERE t.user_id = "${req.cookies.uid}" \
@@ -193,14 +194,27 @@ router.get('/history', function(req, res, next)
   if (after === undefined || after == '') after = '';
   else                                    after = `AND datediff(t.date, "${after}") >= 0`;
 
-  connection.query(`SELECT title, location, date_format(date, "%a %b %d %Y") as date, amount, a.name, categories FROM transactions as t \
+  note = req.query.note;
+  if (note === undefined || note == '') note = '';
+  else                                  note = `AND t.note = "${note}"`;
+
+  connection.query(`SELECT title, location, date_format(date, "%a %b %d %Y") as date, format(amount, 2) as amount, a.name, categories, note FROM transactions as t \
                     INNER JOIN accounts as a ON account_id = a.id \
-                    WHERE t.user_id = "${req.cookies.uid}" ${title} ${location} ${account} ${before} ${after} \
+                    WHERE t.user_id = "${req.cookies.uid}" ${title} ${location} ${account} ${before} ${after} ${note} \
                     ORDER BY t.date DESC LIMIT ${limit}`, function (error, results, fields)
   {
     if      (error)               res.send(error);
-    else if (results.length > 0)  res.render('history', { title: 'Finance', entries: results });
-    else                          res.send("No history found");
+    else if (results.length > 0)
+    {
+      sum = 0;
+      results.forEach(function (result, index)
+      {
+        sum += parseFloat(result.amount.replace(',', ''));
+      });
+      results.push({ 'title': 'Total', 'location':'', 'date':'', 'amount': sum.toFixed(2), 'name':'', 'categories':'', 'note':'' });
+      res.render('history', { title: 'Finance', entries: results });
+    }
+    else res.send("No history found");
   });
 });
 
