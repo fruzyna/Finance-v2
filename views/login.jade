@@ -3,11 +3,18 @@ extends layout
 block content
   h2 Login
   form(name="login", method="post")
-    div.input
-      span.label Username: 
-      input(type="text", name="user")
-    div.input
-      span.label Password: 
-      input(type="password", name="pass")
-    div.actions
-      input(type="submit", value="Login")
+    table
+      tr
+        td
+          span.label Username:
+        td
+          input(type="text", name="user")
+      tr
+        td
+          span.label Password:
+        td
+          input(type="password", name="pass")
+      tr
+        td
+        td
+          input(type="submit", value="Login")

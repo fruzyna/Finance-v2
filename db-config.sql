@@ -19,14 +19,16 @@ CREATE TABLE `transactions` (
   `user_id` int(10) unsigned NOT NULL,
   `account_id` int(10) unsigned NOT NULL,
   `date` date NOT NULL,
-  `title` varchar(16) NOT NULL,
-  `location` varchar(16) NOT NULL,
+  `title` varchar(32) NOT NULL,
+  `location` varchar(24) NOT NULL,
   `amount` float NOT NULL,
   `categories` text DEFAULT NULL,
+  `note` text DEFAULT NULL,
   `linked_transaction` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   KEY `account_id` (`account_id`),
+  KEY `linked_transaction` (`linked_transaction`),
   CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `transactions_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
