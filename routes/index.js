@@ -212,7 +212,7 @@ router.get('/history', function(req, res, next)
         sum += parseFloat(result.amount.replace(',', ''));
       });
       results.push({ 'title': 'Total', 'location':'', 'date':'', 'amount': sum.toFixed(2), 'name':'', 'categories':'', 'note':'' });
-      res.render('history', { title: 'Finance', entries: results });
+      res.render('history', { title: 'Finance', entries: results, query: req.query });
     }
     else res.send("No history found");
   });

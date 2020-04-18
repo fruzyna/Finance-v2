@@ -8,37 +8,37 @@ block content
         td
           span.label Limit:
         td
-          input(type="number", value="10", name="limit")
+          input(type="number", value="#{query.limit||10}", name="limit")
       tr
         td
-          span.label Title: 
+          span.label Title:
         td
-          input(type="text", name="title")
+          input(type="text", value="#{query.title||''}", name="title")
       tr
         td
-          span.label Location: 
+          span.label Location:
         td
-          input(type="text", name="location")
+          input(type="text", value="#{query.location||''}", name="location")
       tr
         td
-          span.label Account: 
+          span.label Account:
         td
-          input(type="text", name="account")
+          input(type="text", value="#{query.account||''}", name="account")
       tr
         td
-          span.label After: 
+          span.label After:
         td
-          input(type="text", name="after")
+          input(type="text", value="#{query.after||''}", name="after")
       tr
         td
-          span.label Before: 
+          span.label Before:
         td
-          input(type="text", name="before")
+          input(type="text", value="#{query.before||''}", name="before")
       tr
         td
-          span.label Note: 
+          span.label Note:
         td
-          input(type="text", name="note")
+          input(type="text", value="#{query.note||''}", name="note")
       tr
         td
         td
