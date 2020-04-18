@@ -1,29 +1,45 @@
 extends layout
 
 block content
-  h1="History"
+  h2 History
   form(name="search", method="get")
-    div.input
-      span.label Limit:
-      input(type="number", value="10", name="limit")
-    div.input
-      span.label Title: 
-      input(type="text", name="title")
-    div.input
-      span.label Location: 
-      input(type="text", name="location")
-    div.input
-      span.label Account: 
-      input(type="text", name="account")
-    div.input
-      span.label After: 
-      input(type="text", name="after")
-    div.input
-      span.label Before: 
-      input(type="text", name="before")
-    div.input
-      input(type="submit", value="Search")
-  table
+    table
+      tr
+        td
+          span.label Limit:
+        td
+          input(type="number", value="10", name="limit")
+      tr
+        td
+          span.label Title: 
+        td
+          input(type="text", name="title")
+      tr
+        td
+          span.label Location: 
+        td
+          input(type="text", name="location")
+      tr
+        td
+          span.label Account: 
+        td
+          input(type="text", name="account")
+      tr
+        td
+          span.label After: 
+        td
+          input(type="text", name="after")
+      tr
+        td
+          span.label Before: 
+        td
+          input(type="text", name="before")
+      tr
+        td
+        td
+          input(type="submit", value="Search")
+  br
+  table#history(cellpadding="5px")
     thead
       tr: th Title
           th Location
@@ -33,10 +49,10 @@ block content
           th Categories
     tbody
       each entry in entries
-        tr
+        tr.row
           td= entry.title
           td= entry.location
           td= entry.date
-          td= entry.amount
+          td.number= entry.amount
           td= entry.name
           td= entry.categories

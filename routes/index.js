@@ -12,7 +12,16 @@ var connection = mysql.createPool(config);
 router.get('/', function(req, res, next)
 {
   if (req.cookies.uid === undefined)  res.redirect('/login');
-  else                                res.render('index', { title: 'Finance', name: req.cookies.name });
+  else
+  {
+    connection.query(`SELECT sum(amount) as total FROM transactions \
+                      WHERE user_id = "${req.cookies.uid}"`, function (error, results, fields)
+                      {
+                        if      (error)               res.send(error);
+                        else if (results.length > 0)  res.render('index', { title: 'Finance', name: req.cookies.name, total: results[0].total });
+                        else                          res.redirect('/add');
+                      });
+  }
 });
 
 /**
@@ -57,26 +66,42 @@ router.post('/add', function(req, res, next)
   }
   uid         = `"${req.cookies.uid}"`;
   account     = `"${req.body.account}"`;
+  transfer    = `"${req.body.transfer}"`;
   title       = `"${req.body.title}"`;
   location    = `"${req.body.location}"`;
   amount      = `"${req.body.amount}"`;
   categories  = `"${req.body.categories}"`;
-
-  connection.query(`SELECT id FROM accounts \
-                    WHERE user_id = ${uid} and name = ${account}`, function (error, results, fields)
+  
+  connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, categories) \
+                    SELECT ${uid}, id, ${date}, ${title}, ${location}, ${amount}, ${categories} \
+                    FROM accounts WHERE name = ${account}`, function (error, results, fields)
   {
-    if      (error) res.send(error);
-    else if (results.length > 0)
+    if (error)  res.send(error);
+    else
     {
-      account = `"${results[0].id}"`;
-      connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, categories)\
-                        VALUES (${uid}, ${account}, ${date}, ${title}, ${location}, ${amount}, ${categories})`, function (error, results, fields)
+      id = results.insertId;
+      if (req.body.transfer !== undefined && req.body.transfer != "")
       {
-        if (error)  res.send(error);
-        else        res.redirect('/add');
-      });
+        amount = `"-${req.body.amount}"`;
+        connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, categories, linked_transaction) \
+                          SELECT ${uid}, a.id, ${date}, ${title}, ${location}, ${amount}, ${categories}, max(t.id) \
+                          FROM accounts as a, transactions as t WHERE a.name = ${transfer} and t.user_id = ${uid}`, function (error, results, fields)
+        {
+          if (error)  res.send(error);
+          else
+          {
+            connection.query(`UPDATE transactions \
+                              SET linked_transaction = (SELECT max(id) FROM transactions WHERE user_id = ${uid}) \
+                              WHERE id = ${id}`, function (error, results, fields)
+            {
+              if (error)  res.send(error);
+              else        res.redirect('/history');
+            });
+          }
+        });
+      }
+      else res.redirect('/history');
     }
-    else res.send('No account, ' + account + ', found');
   });
 });
 
@@ -122,7 +147,7 @@ router.get('/accounts', function(req, res, next)
     return;
   }
 
-  connection.query(`SELECT sum(amount), name \
+  connection.query(`SELECT sum(amount) as balance, name \
                     FROM transactions as t \
                     INNER JOIN accounts as a ON account_id = a.id \
                     WHERE t.user_id = "${req.cookies.uid}" \
@@ -168,10 +193,10 @@ router.get('/history', function(req, res, next)
   if (after === undefined || after == '') after = '';
   else                                    after = `AND datediff(t.date, "${after}") >= 0`;
 
-  connection.query(`SELECT *, a.name FROM transactions as t \
+  connection.query(`SELECT title, location, date_format(date, "%a %b %d %Y") as date, amount, a.name, categories FROM transactions as t \
                     INNER JOIN accounts as a ON account_id = a.id \
                     WHERE t.user_id = "${req.cookies.uid}" ${title} ${location} ${account} ${before} ${after} \
-                    LIMIT ${limit}`, function (error, results, fields)
+                    ORDER BY t.date DESC LIMIT ${limit}`, function (error, results, fields)
   {
     if      (error)               res.send(error);
     else if (results.length > 0)  res.render('history', { title: 'Finance', entries: results });

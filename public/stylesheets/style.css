@@ -6,3 +6,15 @@ body {
 a {
   color: #00B7FF;
 }
+
+thead {
+  background-color: #f2f2f2;
+}
+
+.row:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.number {
+  text-align: right;
+}
