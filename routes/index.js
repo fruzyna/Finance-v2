@@ -70,11 +70,11 @@ router.post('/add', function(req, res, next)
   title       = `"${req.body.title}"`;
   location    = `"${req.body.location}"`;
   amount      = `"${req.body.amount}"`;
-  categories  = `"${req.body.categories}"`;
+  category    = `"${req.body.category}"`;
   note        = `"${req.body.note}"`;
   
-  connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, categories, note) \
-                    SELECT ${uid}, id, ${date}, ${title}, ${location}, ${amount}, ${categories}, ${note} \
+  connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, category, note) \
+                    SELECT ${uid}, id, ${date}, ${title}, ${location}, ${amount}, ${category}, ${note} \
                     FROM accounts WHERE name = ${account}`, function (error, results, fields)
   {
     if (error)  res.send(error);
@@ -84,8 +84,8 @@ router.post('/add', function(req, res, next)
       if (req.body.transfer !== undefined && req.body.transfer != "")
       {
         amount = `"-${req.body.amount}"`;
-        connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, categories, note, linked_transaction) \
-                          SELECT ${uid}, a.id, ${date}, ${title}, ${location}, ${amount}, ${categories}, ${note}, max(t.id) \
+        connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, category, note, linked_transaction) \
+                          SELECT ${uid}, a.id, ${date}, ${title}, ${location}, ${amount}, ${category}, ${note}, max(t.id) \
                           FROM accounts as a, transactions as t WHERE a.name = ${transfer} and t.user_id = ${uid}`, function (error, results, fields)
         {
           if (error)  res.send(error);
@@ -194,13 +194,17 @@ router.get('/history', function(req, res, next)
   if (after === undefined || after == '') after = '';
   else                                    after = `AND datediff(t.date, "${after}") >= 0`;
 
+  category = req.query.category;
+  if (category === undefined || category == '') category = '';
+  else                                          category = `AND t.category = "${category}"`;
+
   note = req.query.note;
   if (note === undefined || note == '') note = '';
   else                                  note = `AND t.note = "${note}"`;
 
-  connection.query(`SELECT title, location, date_format(date, "%a %b %d %Y") as date, format(amount, 2) as amount, a.name, categories, note FROM transactions as t \
+  connection.query(`SELECT title, location, date_format(date, "%a %b %d %Y") as date, format(amount, 2) as amount, a.name, category, note FROM transactions as t \
                     INNER JOIN accounts as a ON account_id = a.id \
-                    WHERE t.user_id = "${req.cookies.uid}" ${title} ${location} ${account} ${before} ${after} ${note} \
+                    WHERE t.user_id = "${req.cookies.uid}" ${title} ${location} ${account} ${before} ${after} ${category} ${note} \
                     ORDER BY t.date DESC LIMIT ${limit}`, function (error, results, fields)
   {
     if      (error)               res.send(error);
@@ -211,7 +215,7 @@ router.get('/history', function(req, res, next)
       {
         sum += parseFloat(result.amount.replace(',', ''));
       });
-      results.push({ 'title': 'Total', 'location':'', 'date':'', 'amount': sum.toFixed(2), 'name':'', 'categories':'', 'note':'' });
+      results.push({ 'title': 'Total', 'location':'', 'date':'', 'amount': sum.toFixed(2), 'name':'', 'category':'', 'note':'' });
       res.render('history', { title: 'Finance', entries: results, query: req.query });
     }
     else res.send("No history found");

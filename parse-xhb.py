@@ -23,7 +23,7 @@ for account in root.findall('account'):
     transaction['account'] = account.attrib['name']
     transaction['title'] = 'Initial Balance'
     transaction['location'] = account.attrib['name']
-    transaction['categories'] = ''
+    transaction['category'] = ''
     transaction['note'] = ''
     transaction['transfer'] = False
     transactions.append(transaction)
@@ -51,9 +51,9 @@ for entry in root.findall('ope'):
     else:
         transaction['location'] = ''
     if 'category' in entry.attrib.keys():
-        transaction['categories'] = categories[entry.attrib['category']]
+        transaction['category'] = categories[entry.attrib['category']]
     else:
-        transaction['categories'] = ''
+        transaction['category'] = ''
     if 'wording' in entry.attrib.keys():
         transaction['note'] = entry.attrib['wording']
     else:
@@ -79,15 +79,15 @@ for entry in root.findall('ope'):
 i = 0
 while i < len(transactions):
     transaction = transactions[i]
-    print("""INSERT INTO transactions (user_id, account_id, date, title, location, amount, categories, note)
+    print("""INSERT INTO transactions (user_id, account_id, date, title, location, amount, category, note)
     SELECT "{0}", id, "{2}", "{3}", "{4}", "{5}", "{6}", "{7}"
-    FROM accounts WHERE name = "{1}";""".format(uid, transaction['account'], transaction['date'], transaction['title'], transaction['location'], transaction['amount'], transaction['categories'], transaction['note']))
+    FROM accounts WHERE name = "{1}";""".format(uid, transaction['account'], transaction['date'], transaction['title'], transaction['location'], transaction['amount'], transaction['category'], transaction['note']))
     if transaction['transfer']:
         i += 1
         transaction = transactions[i]
-        print("""INSERT INTO transactions (user_id, account_id, date, title, location, amount, categories, note, linked_transaction)
+        print("""INSERT INTO transactions (user_id, account_id, date, title, location, amount, category, note, linked_transaction)
         SELECT "{0}", a.id, "{2}", "{3}", "{4}", "{5}", "{6}", "{7}", max(t.id)
-        FROM accounts as a, transactions as t WHERE a.name = "{1}" and t.user_id = "{0}";""".format(uid, transaction['account'], transaction['date'], transaction['title'], transaction['location'], transaction['amount'], transaction['categories'], transaction['note']))
+        FROM accounts as a, transactions as t WHERE a.name = "{1}" and t.user_id = "{0}";""".format(uid, transaction['account'], transaction['date'], transaction['title'], transaction['location'], transaction['amount'], transaction['category'], transaction['note']))
         
         print("""UPDATE transactions
         SET linked_transaction = (SELECT max(id) FROM transactions WHERE user_id = "{0}")

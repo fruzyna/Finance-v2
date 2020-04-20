@@ -2,7 +2,7 @@ extends layout
 
 block content
   h2 History
-  form(name="search", method="get")
+  form(name="search", method="get")#left
     table
       tr
         td
@@ -36,6 +36,11 @@ block content
           input(type="text", value="#{query.before||''}", name="before")
       tr
         td
+          span.label Category:
+        td
+          input(type="text", value="#{query.category||''}", name="category")
+      tr
+        td
           span.label Note:
         td
           input(type="text", value="#{query.note||''}", name="note")
@@ -43,7 +48,6 @@ block content
         td
         td
           input(type="submit", value="Search")
-  br
   table(cellpadding="5px")
     thead
       tr: th Title
@@ -51,7 +55,7 @@ block content
           th Date
           th Amount
           th Account
-          th Categories
+          th Category
           th Note
     tbody
       each entry in entries
@@ -61,5 +65,5 @@ block content
           td= entry.date
           td.number= entry.amount
           td= entry.name
-          td= entry.categories
+          td= entry.category
           td= entry.note

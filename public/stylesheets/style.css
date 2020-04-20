@@ -18,3 +18,16 @@ thead {
 .number {
   text-align: right;
 }
+
+.link {
+  padding: 5px;
+  margin-right: 5px;
+  text-decoration: none;
+  color: white;
+  background-color: #00B7FF;
+}
+
+#left {
+  float: left;
+  margin-right: 5px;
+}

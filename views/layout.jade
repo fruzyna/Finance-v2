@@ -5,13 +5,9 @@ html
     link(rel='stylesheet', href='/stylesheets/style.css')
   body
     h1 Finance
-    a(href="/")             Home
-    span 
-    a(href="/accounts")     Accounts
-    span 
-    a(href="/history")      History
-    span 
-    a(href="/add")          Add Transaction
-    span 
-    a(href="/add-account")  Add Account
+    a(href="/").link Home
+    a(href="/accounts").link Accounts
+    a(href="/history").link History
+    a(href="/add").link Add Transaction
+    a(href="/add-account").link Add Account
     block content
