@@ -44,8 +44,8 @@ router.post('/login', function(req, res, next)
     }
     else if (results.length > 0)
     {
-      res.cookie('uid', results[0].id);
-      res.cookie('name', req.body.user);
+      res.cookie('uid', results[0].id, { maxAge: 2592000000});
+      res.cookie('name', req.body.user, { maxAge: 2592000000});
       res.redirect('/');
     }
     else res.render('login', { error_text: 'Invalid username or password' });
