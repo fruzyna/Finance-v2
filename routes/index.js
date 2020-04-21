@@ -189,7 +189,6 @@ router.get('/accounts', function(req, res, next)
                     FROM transactions
                     WHERE user_id = "${req.cookies.uid}"`, function (error, results, fields)
   {
-    console.log(results)
     if      (error)               res.send(error);
     else if (results.length > 0)  res.render('balances', { title: 'Finance', accounts: results});
     else                          res.send("No accounts found");

@@ -16,3 +16,13 @@ services:
     ports:
       - 3306:3306
     restart: unless-stopped
+
+  finance-app:
+    image: node
+    container_name: finance-app
+    working_dir: /app
+    command: ./install-and-start.sh
+    volumes: {repo_file_location}:/app
+    ports:
+      - 80:3000
+    restart: unless-stopped
