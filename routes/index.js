@@ -18,7 +18,7 @@ router.get('/', function(req, res, next)
                       WHERE user_id = "${req.cookies.uid}"`, function (error, results, fields)
                       {
                         if      (error)               res.send(error);
-                        else if (results.length > 0)  res.render('index', { title: 'Finance', name: req.cookies.name, total: results[0].total });
+                        else if (results.length > 0)  res.render('index', { name: req.cookies.name, total: results[0].total });
                         else                          res.redirect('/add');
                       });
   }
@@ -29,7 +29,7 @@ router.get('/', function(req, res, next)
  */
 router.get('/login', function(req, res, next)
 {
-  res.render('login', { title: 'Finance Login' });
+  res.render('login', { error_text: '' });
 });
 
 router.post('/login', function(req, res, next)
@@ -37,14 +37,18 @@ router.post('/login', function(req, res, next)
   connection.query(`SELECT id FROM users WHERE username = "${req.body.user}"
                     and password = password("${req.body.pass}")`, function (error, results, fields)
   {
-    if      (error) res.send(error);
+    if (error) 
+    {
+      console.log(error);
+      res.render('login', { error_text: 'Login failure' });
+    }
     else if (results.length > 0)
     {
       res.cookie('uid', results[0].id);
       res.cookie('name', req.body.user);
       res.redirect('/');
     }
-    else res.redirect('/login');
+    else res.render('login', { error_text: 'Invalid username or password' });
   });
 });
 
@@ -56,35 +60,23 @@ router.get('/add', function(req, res, next)
   connection.query(`SELECT DISTINCT location FROM transactions
                     WHERE user_id = "${req.cookies.uid}"`, function (error, locations, fields)
   {
-    if (error) res.send(error);
-    else 
+    if (error || locations.length <= 0) locations = {};
+
+    connection.query(`SELECT DISTINCT a.name
+                      FROM transactions as t INNER JOIN accounts as a ON account_id = a.id
+                      WHERE t.user_id = "${req.cookies.uid}"`, function (error, accounts, fields)
     {
-      if (locations.length <= 0) locations = {};
+      if (error || accounts.length <= 0) accounts = {};
 
-      connection.query(`SELECT DISTINCT a.name
-                        FROM transactions as t INNER JOIN accounts as a ON account_id = a.id
-                        WHERE t.user_id = "${req.cookies.uid}"`, function (error, accounts, fields)
+      connection.query(`SELECT DISTINCT category FROM transactions
+                        WHERE user_id = "${req.cookies.uid}"`, function (error, categories, fields)
       {
-        if (error) res.send(error);
-        else 
-        {
-          if (accounts.length <= 0) accounts = {};
+        if (error || categories.length <= 0) categories = {};
 
-          connection.query(`SELECT DISTINCT category FROM transactions
-                            WHERE user_id = "${req.cookies.uid}"`, function (error, categories, fields)
-          {
-            if (error) res.send(error);
-            else
-            {
-              if (categories.length <= 0) categories = {};
-
-              if (req.cookies.uid === undefined)  res.redirect('/login');
-              else res.render('add', { title: 'Finance', locations: locations, accounts: accounts, categories: categories });
-            }
-          });
-        }
+        if (req.cookies.uid === undefined)  res.redirect('/login');
+        else res.render('add', { title: 'Finance', locations: locations, accounts: accounts, categories: categories });
       });
-    }
+    });
   });
 });
 

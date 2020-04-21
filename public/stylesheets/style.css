@@ -31,3 +31,7 @@ thead {
   float: left;
   margin-right: 5px;
 }
+
+.error {
+  color: #FF0000;
+}
