@@ -18,17 +18,23 @@ block content
         td
           span.label Location:
         td
-          input(type="text", name="location")
+          input(type="text", list="locations", name="location", autocomplete="off")
+          datalist(id="locations")
+            each location in locations
+              option(value="#{location.location}")
       tr
         td
           span.label Account:
         td
-          input(type="text", name="account")
+          input(type="text", list="accounts", name="account", autocomplete="off")
+          datalist(id="accounts")
+            each account in accounts
+              option(value="#{account.name}")
       tr
         td
           span.label From:
         td
-          input(type="text", name="transfer")
+          input(type="text", list="accounts", name="transfer")
       tr
         td
           span.label Amount:
@@ -38,7 +44,10 @@ block content
         td
           span.label Category:
         td
-          input(type="text", name="category")
+          input(type="text", list="categories", name="category", autocomplete="off")
+          datalist(id="categories")
+            each category in categories
+              option(value="#{category.category}")
       tr
         td
           span.label Note:

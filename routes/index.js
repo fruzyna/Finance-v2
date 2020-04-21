@@ -53,8 +53,39 @@ router.post('/login', function(req, res, next)
  */
 router.get('/add', function(req, res, next)
 {
-  if (req.cookies.uid === undefined)  res.redirect('/login');
-  else                                res.render('add', { title: 'Finance' });
+  connection.query(`SELECT DISTINCT location FROM transactions
+                    WHERE user_id = "${req.cookies.uid}"`, function (error, locations, fields)
+  {
+    if (error) res.send(error);
+    else 
+    {
+      if (locations.length <= 0) locations = {};
+
+      connection.query(`SELECT DISTINCT a.name
+                        FROM transactions as t INNER JOIN accounts as a ON account_id = a.id
+                        WHERE t.user_id = "${req.cookies.uid}"`, function (error, accounts, fields)
+      {
+        if (error) res.send(error);
+        else 
+        {
+          if (accounts.length <= 0) accounts = {};
+
+          connection.query(`SELECT DISTINCT category FROM transactions
+                            WHERE user_id = "${req.cookies.uid}"`, function (error, categories, fields)
+          {
+            if (error) res.send(error);
+            else
+            {
+              if (categories.length <= 0) categories = {};
+
+              if (req.cookies.uid === undefined)  res.redirect('/login');
+              else res.render('add', { title: 'Finance', locations: locations, accounts: accounts, categories: categories });
+            }
+          });
+        }
+      });
+    }
+  });
 });
 
 router.post('/add', function(req, res, next)
