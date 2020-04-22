@@ -2,6 +2,7 @@ extends layout
 
 block content
   h2 Add Entry
+  p.error #{error_text}
   form(name="add", method="post")
     table
       tr
