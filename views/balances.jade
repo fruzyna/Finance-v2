@@ -2,7 +2,7 @@ extends layout
 
 block content
   h2 Balances
-  table(cellpadding="5px")
+  table(cellpadding="5px")#left
     thead
       tr: th Account
           th Balance
@@ -11,3 +11,6 @@ block content
         tr.row
           td= account.name
           td.number= account.balance
+  div#plot
+  script var plot_data = !{JSON.stringify(accounts)}
+  script(src="/javascripts/plot-bar.js")

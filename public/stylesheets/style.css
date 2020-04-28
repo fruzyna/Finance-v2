@@ -35,3 +35,36 @@ thead {
 .error {
   color: #FF0000;
 }
+
+.line {
+  fill: none;
+  stroke: #ffab00;
+  stroke-width: 3;
+}
+
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+/* Style the dots by assigning a fill and stroke */
+.dot {
+  fill: #ffab00;
+  stroke: #fff;
+}
+
+.focus circle {
+  fill: none;
+  stroke: steelblue;
+}
+
+.axis {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}

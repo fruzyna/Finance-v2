@@ -14,13 +14,16 @@ router.get('/', function(req, res, next)
   if (req.cookies.uid === undefined)  res.redirect('/login');
   else
   {
-    connection.query(`SELECT format(sum(amount), 2) as total FROM transactions
-                      WHERE user_id = "${req.cookies.uid}"`, function (error, results, fields)
-                      {
-                        if      (error)               res.send(error);
-                        else if (results.length > 0)  res.render('index', { name: req.cookies.name, total: results[0].total });
-                        else                          res.redirect('/add');
-                      });
+    connection.query(`(SELECT date_format(date, "%Y-%m-%d") as date, format(amount, 2) as amount FROM transactions
+                      WHERE user_id = "${req.cookies.uid}" and date >= SUBDATE(now(), 31))
+                      UNION
+                      (SELECT now() as date, format(sum(amount), 2) as amount FROM transactions) ORDER BY date`, 
+                      function (error, results, fields)
+    {
+      if      (error)               res.send(error);
+      else if (results.length > 0)  res.render('index', { name: req.cookies.name, total: results[results.length-1].amount, totals: results });
+      else                          res.redirect('/add');
+    });
   }
 });
 
