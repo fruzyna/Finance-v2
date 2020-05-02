@@ -6,6 +6,24 @@ var mysql = require('mysql');
 var config = require('../sql-config.json')
 var connection = mysql.createPool(config);
 
+function process_date(date)
+{
+  date = date.trim().toLowerCase()
+  if (date == '' || date == 'today')
+  {
+    return 'now()'
+  }
+  else if (date == 'yesterday')
+  {
+    return 'subdate(now(), 1)'
+  }
+  else if (date == 'tomorrow')
+  {
+    return 'adddate(now(), 1)'
+  }
+  return `"${date}"`
+}
+
 /**
  * Homepage
  */
@@ -97,11 +115,7 @@ router.get('/add', function(req, res, next)
 
 router.post('/add', function(req, res, next)
 {
-  date        = 'now()';
-  if (req.body.date != '')
-  {
-    date      = `"${req.body.date}"`;
-  }
+  date        = process_date(req.body.date);
   uid         = `"${req.cookies.uid}"`;
   account     = `"${req.body.account}"`;
   transfer    = `"${req.body.transfer}"`;
@@ -110,7 +124,7 @@ router.post('/add', function(req, res, next)
   amount      = `"${req.body.amount}"`;
   category    = `"${req.body.category}"`;
   note        = `"${req.body.note}"`;
-  keep        = `"${req.body.keep}"`;
+  keep        = req.body.keep;
   
   connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, category, note)
                     SELECT ${uid}, id, ${date}, ${title}, ${location}, ${amount}, ${category}, ${note}
@@ -233,11 +247,11 @@ router.get('/history', function(req, res, next)
 
   before = req.query.before;
   if (before === undefined || before == '') before = '';
-  else                                      before = `AND datediff(t.date, "${before}") < 0`;
+  else                                      before = `AND datediff(t.date, ${process_date(before)}) < 0`;
 
   after = req.query.after;
   if (after === undefined || after == '') after = '';
-  else                                    after = `AND datediff(t.date, "${after}") >= 0`;
+  else                                    after = `AND datediff(t.date, ${process_date(after)}) > 0`;
 
   category = req.query.category;
   if (category === undefined || category == '') category = '';
@@ -267,11 +281,7 @@ router.get('/history', function(req, res, next)
 
 router.post('/history', function(req, res, next)
 {
-  date        = 'now()';
-  if (req.body.date != '')
-  {
-    date      = `"${req.body.date}"`;
-  }
+  date        = process_date(req.body.date);
   uid         = `"${req.cookies.uid}"`;
   account     = `"${req.body.account}"`;
   title       = `"${req.body.title}"`;
