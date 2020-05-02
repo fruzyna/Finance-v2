@@ -1,6 +1,6 @@
 // process and sort values
 var running = [];
-var total = Number(plot_data.pop().amount.replace(',', ''));
+var total = Number(plot_data.pop().raw);
 running.push(total);
 
 var currentDate = Date.parse(plot_data[plot_data.length - 1].date);
@@ -9,7 +9,7 @@ while (currentDate >= stopDate )
 {
     if (plot_data.length > 0 && Date.parse(plot_data[plot_data.length - 1].date) == currentDate)
     {
-        total -= Number(plot_data.pop().amount.replace(',', ''))
+        total -= Number(plot_data.pop().raw)
     }
     else
     {

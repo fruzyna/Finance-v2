@@ -68,3 +68,7 @@ thead {
   stroke: #000;
   shape-rendering: crispEdges;
 }
+
+.hidden {
+  display: none;
+}

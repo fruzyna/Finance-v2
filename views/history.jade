@@ -57,13 +57,40 @@ block content
           th Account
           th Category
           th Note
+          th Edit
+          th Delete
     tbody
       each entry in entries
         tr.row
-          td= entry.title
-          td= entry.location
-          td= entry.date
-          td.number= entry.amount
-          td= entry.name
-          td= entry.category
-          td= entry.note
+          if entry.id == query.edit
+            form(name="search", method="post")
+              td
+                input(type="text", name="title", value="#{entry.title}")
+              td
+                input(type="text", list="locations", name="location", autocomplete="off", value="#{entry.location}")
+              td
+                input(type="text", name="date", value="#{entry.date}")
+              td
+                input(type="number", step="0.01", name="amount", value="#{entry.raw}")
+              td
+                input(type="text", list="accounts", name="account", autocomplete="off", value="#{entry.name}")
+              td
+                input(type="text", list="categories", name="category", autocomplete="off", value="#{entry.category}")
+              td
+                input(type="text", name="note", value="#{entry.note}")
+              td
+                input(type="submit", value="Save")
+              td
+                input(type="text", name="id", value="#{entry.id}").hidden
+          else
+            td= entry.title
+            td= entry.location
+            td= entry.date
+            td.number= entry.amount
+            td= entry.name
+            td= entry.category
+            td= entry.note
+            td
+              a(href="/history?edit=#{entry.id}")= entry.edtext
+            td
+              a(href="/delete?id=#{entry.id}")= entry.deltext

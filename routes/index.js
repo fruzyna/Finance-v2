@@ -14,10 +14,10 @@ router.get('/', function(req, res, next)
   if (req.cookies.uid === undefined)  res.redirect('/login');
   else
   {
-    connection.query(`(SELECT date_format(date, "%Y-%m-%d") as date, format(amount, 2) as amount FROM transactions
+    connection.query(`(SELECT date_format(date, "%Y-%m-%d") as date, amount as raw, format(amount, 2) as amount FROM transactions
                       WHERE user_id = "${req.cookies.uid}" and date >= SUBDATE(now(), 31))
                       UNION
-                      (SELECT now() as date, format(sum(amount), 2) as amount FROM transactions) ORDER BY date`, 
+                      (SELECT now() as date, sum(amount) as raw, format(sum(amount), 2) as amount FROM transactions) ORDER BY date`, 
                       function (error, results, fields)
     {
       if      (error)               res.send(error);
@@ -52,6 +52,18 @@ router.post('/login', function(req, res, next)
       res.redirect('/');
     }
     else res.render('login', { error_text: 'Invalid username or password' });
+  });
+});
+
+/**
+ * Delete Entry
+ */
+router.get('/delete', function(req, res, next)
+{
+  connection.query(`DELETE FROM transactions WHERE id = "${req.query.id}"`, function (error, results, fields)
+  {
+    if (error)  res.send(`Error deleting entry ${req.query.id}`);
+    else        res.redirect('/history');
   });
 });
 
@@ -98,6 +110,7 @@ router.post('/add', function(req, res, next)
   amount      = `"${req.body.amount}"`;
   category    = `"${req.body.category}"`;
   note        = `"${req.body.note}"`;
+  keep        = `"${req.body.keep}"`;
   
   connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, category, note)
                     SELECT ${uid}, id, ${date}, ${title}, ${location}, ${amount}, ${category}, ${note}
@@ -121,13 +134,15 @@ router.post('/add', function(req, res, next)
                               SET linked_transaction = (SELECT max(id) FROM transactions WHERE user_id = ${uid})
                               WHERE id = ${id}`, function (error, results, fields)
             {
-              if (error)  res.send(error);
-              else        res.redirect('/history');
+              if (error)      res.send(error);
+              else if (!keep) res.redirect('/history');
+              else            res.redirect('/add');
             });
           }
         });
       }
-      else res.redirect('/history');
+      else if (!keep) res.redirect('/history');
+      else            res.redirect('/add');
     }
   });
 });
@@ -174,13 +189,13 @@ router.get('/accounts', function(req, res, next)
     return;
   }
 
-  connection.query(`SELECT format(sum(amount), 2) as balance, name
+  connection.query(`SELECT sum(amount) as raw, format(sum(amount), 2) as balance, name
                     FROM transactions as t
                     INNER JOIN accounts as a ON account_id = a.id
                     WHERE t.user_id = "${req.cookies.uid}"
                     GROUP BY account_id
                     UNION
-                    SELECT format(sum(amount), 2) as balance, "Total" as name
+                    SELECT sum(amount) as raw, format(sum(amount), 2) as balance, "Total" as name
                     FROM transactions
                     WHERE user_id = "${req.cookies.uid}"`, function (error, results, fields)
   {
@@ -232,12 +247,12 @@ router.get('/history', function(req, res, next)
   if (note === undefined || note == '') note = '';
   else                                  note = `AND t.note = "${note}"`;
 
-  connection.query(`(SELECT title, location, date_format(date, "%a %b %d %Y") as date, format(amount, 2) as amount, a.name, category, note
+  connection.query(`(SELECT t.id, title, location, date_format(date, "%Y-%m-%d") as date, amount as raw, format(amount, 2) as amount, a.name, category, note, "Edit" as edtext, "Delete" as deltext
                     FROM transactions as t INNER JOIN accounts as a ON account_id = a.id
                     WHERE t.user_id = "${req.cookies.uid}" ${title} ${location} ${account} ${before} ${after} ${category} ${note}
                     ORDER BY t.date DESC LIMIT ${limit})
                     UNION
-                    (SELECT "Total" as title, "" as location, "" as date, format(sum(s.amount), 2) as amount, "" as name, "" as category, "" as note
+                    (SELECT "" as id, "Total" as title, "" as location, "" as date, sum(s.amount) as raw, format(sum(s.amount), 2) as amount, "" as name, "" as category, "" as note, "" as edtext, "" as deltext
                     FROM (SELECT title, location, date, amount, a.name, category, note
                     FROM transactions as t INNER JOIN accounts as a ON account_id = a.id
                     WHERE t.user_id = "${req.cookies.uid}" ${title} ${location} ${account} ${before} ${after} ${category} ${note}
@@ -247,6 +262,31 @@ router.get('/history', function(req, res, next)
     if      (error)               res.send(error);
     else if (results.length > 0)  res.render('history', { title: 'Finance', entries: results, query: req.query });
     else                          res.send("No history found");
+  });
+});
+
+router.post('/history', function(req, res, next)
+{
+  date        = 'now()';
+  if (req.body.date != '')
+  {
+    date      = `"${req.body.date}"`;
+  }
+  uid         = `"${req.cookies.uid}"`;
+  account     = `"${req.body.account}"`;
+  title       = `"${req.body.title}"`;
+  location    = `"${req.body.location}"`;
+  amount      = `"${req.body.amount}"`;
+  category    = `"${req.body.category}"`;
+  note        = `"${req.body.note}"`;
+  id          = `"${req.body.id}"`;
+
+  connection.query(`UPDATE transactions as t, accounts as a SET account_id = a.id, date = ${date}, title = ${title}, location = ${location},
+                    amount = ${amount}, category = ${category}, note = ${note}
+                    WHERE t.id = ${id} and name = ${account}`, function (error, results, fields)
+  {
+    if      (error) res.send(error);
+    else            res.redirect('/history');
   });
 });
 

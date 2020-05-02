@@ -3,7 +3,7 @@ var min = 0;
 var max = 0;
 plot_data.forEach(function (account, index)
 {
-    let bal = Number(account.balance.replace(',', ''));
+    let bal = Number(account.raw);
     account.balance = bal;
     if (bal > max)
         max = bal;
