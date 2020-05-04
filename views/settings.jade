@@ -1,0 +1,30 @@
+extends layout
+
+block content
+  h2 Settings
+  h3 Change Password
+  p.error #{error_text}
+  form(name="password", method="post", action="/password")
+    table
+      tr
+        td
+          span.label Old Password:
+        td
+          input(type="password", name="old")
+      tr
+        td
+          span.label New Password:
+        td
+          input(type="password", name="new1")
+      tr
+        td
+          span.label Repeat New Password:
+        td
+          input(type="password", name="new2")
+      tr
+        td
+        td
+          input(type="submit", value="Update")
+  h3 Session
+  form(name="logout", method="post", action="/logout")
+    input(type="submit", value="Logout")

@@ -24,6 +24,11 @@ function process_date(date)
   return `"${date}"`
 }
 
+function generate_key()
+{
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 14)
+}
+
 /**
  * Homepage
  */
@@ -71,6 +76,59 @@ router.post('/login', function(req, res, next)
     }
     else res.render('login', { error_text: 'Invalid username or password' });
   });
+});
+
+/**
+ * Settings
+ */
+router.get('/settings', function(req, res, next)
+{
+  res.render('settings', { error_text: '' });
+});
+
+router.post('/password', function(req, res, next)
+{
+  if (req.body.new1 == req.body.new2)
+  {
+    connection.query(`UPDATE users SET password = password("${req.body.new1}") WHERE id = "${req.cookies.uid}"
+                      and password = password("${req.body.old}");`, function (error, results, fields)
+    {
+      if (error) 
+      {
+        res.render('settings', { error_text: 'Something went wrong' });
+      }
+      else
+      {
+        connection.query(`SELECT username FROM users WHERE id = "${req.cookies.uid}"
+                          and password = password("${req.body.new1}")`, function (error, results, fields)
+        {
+          if (error) 
+          {
+            res.render('settings', { error_text: 'Something went wrong' });
+          }
+          else if (results.length > 0)
+          {
+            res.render('settings', { error_text: 'Successfully updated password' });
+          }
+          else
+          {
+            res.render('settings', { error_text: 'Incorrect password' });
+          }
+        });
+      }
+    });
+  }
+  else
+  {
+    res.render('settings', { error_text: 'Passwords do not match' });
+  }
+});
+
+router.post('/logout', function(req, res, next)
+{
+  res.cookie('name', '', { maxAge: 0});
+  res.cookie('uid', '', { maxAge: 0});
+  res.redirect('/');
 });
 
 /**
