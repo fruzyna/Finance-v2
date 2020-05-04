@@ -1,6 +1,7 @@
 SET NAMES utf8;
 SET time_zone = '+00:00';
 SET foreign_key_checks = 0;
+SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
 
 DROP TABLE IF EXISTS `accounts`;
 CREATE TABLE `accounts` (
@@ -13,6 +14,15 @@ CREATE TABLE `accounts` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
+DROP TABLE IF EXISTS `sessions`;
+CREATE TABLE `sessions` (
+  `session_key` char(32) NOT NULL,
+  `user_id` int(10) unsigned NOT NULL,
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
 DROP TABLE IF EXISTS `transactions`;
 CREATE TABLE `transactions` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -20,10 +30,10 @@ CREATE TABLE `transactions` (
   `account_id` int(10) unsigned NOT NULL,
   `date` date NOT NULL,
   `title` varchar(32) NOT NULL,
-  `location` varchar(24) NOT NULL,
+  `location` varchar(32) NOT NULL,
   `amount` float NOT NULL,
-  `categories` text DEFAULT NULL,
-  `note` text DEFAULT NULL,
+  `category` varchar(32) DEFAULT NULL,
+  `note` varchar(64) DEFAULT NULL,
   `linked_transaction` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
