@@ -45,14 +45,39 @@ function generate_key()
 }
 
 // redirect to login if a session doesn't already exist
-function session_exists(req, res)
+function session_exists(req, res, response)
 {
-  if (req.cookies.session === undefined)
+  let session = req.cookies.session
+  if (session === undefined)
   {
     res.redirect('/login')
-    return false
   }
-  return true
+  else
+  {
+    // check if session key is valid
+    connection.query(`SELECT user_id FROM sessions
+                      WHERE session_key = "${session}"`, function (error, results, fields)
+    {
+      if (error)
+      {
+        res.send(error)
+      }
+      else if (results.length > 0)
+      {
+        // update the last time this key was accessed
+        connection.query(`UPDATE sessions SET last_accessed = now()
+                          WHERE session_key = "${session}"`)
+
+        // respond to request
+        response(`"${results[0].user_id}"`)
+      }
+      else
+      {
+        res.cookie('session', '', { maxAge: 0})
+        res.redirect('/login')
+      }
+    })
+  }
 }
 
 // create a where clause based on a given format
@@ -73,21 +98,17 @@ function create_clause(value, format)
  */
 router.get('/', function(req, res, next)
 {
-  if (session_exists(req, res))
+  session_exists(req, res, function (user_id)
   {
-    session = `"${req.cookies.session}"`
-    connection.query(`(SELECT date_format(t.date, "%Y-%m-%d") as date, t.amount as raw, format(t.amount, 2) as amount, "" as name
-                        FROM transactions as t
-                        INNER JOIN sessions as s ON s.session_key = ${session}
-                        WHERE t.user_id = s.user_id and t.date >= SUBDATE(now(), 31))
+    connection.query(`(SELECT date_format(date, "%Y-%m-%d") as date, amount as raw, format(amount, 2) as amount, "" as name
+                        FROM transactions
+                        WHERE user_id = ${user_id} and date >= SUBDATE(now(), 31))
                       UNION
                       (SELECT now() as date, sum(t.amount) as raw, format(sum(t.amount), 2) as amount, u.username as name
                         FROM transactions as t
-                        INNER JOIN sessions as s ON s.session_key = ${session}
-                        INNER JOIN users as u ON u.id = s.user_id
-                        WHERE t.user_id = s.user_id)
-                      ORDER BY date`, 
-                      function (error, results, fields)
+                        INNER JOIN users as u ON u.id = ${user_id}
+                        WHERE t.user_id = ${user_id})
+                      ORDER BY date`, function (error, results, fields)
     {
       if (error)
       {
@@ -102,7 +123,7 @@ router.get('/', function(req, res, next)
         res.redirect('/add')
       }
     })
-  }
+  })
 })
 
 /**
@@ -128,8 +149,8 @@ router.post('/login', function(req, res, next)
     {
       uid = results[0].id
       key = generate_key()
-      connection.query(`INSERT INTO sessions (session_key, user_id)
-                        VALUES ("${key}", "${uid}")`, function (error, results, fields)
+      connection.query(`INSERT INTO sessions (session_key, user_id, last_accessed, description)
+                        VALUES ("${key}", "${uid}", now(), "${req.headers['user-agent']}")`, function (error, results, fields)
       {
         if (error)
         {
@@ -152,45 +173,76 @@ router.post('/login', function(req, res, next)
  */
 router.get('/settings', function(req, res, next)
 {
-  if (session_exists(req, res))
+  session_exists(req, res, function (user_id)
   {
-    res.render('settings', { error_text: '' })
-  }
+    connection.query(`SELECT right(session_key, 4) as session_key, last_accessed, description FROM sessions
+                      WHERE user_id = ${user_id}`, function (error, results, fields)
+    {
+      if (error) 
+      {
+        console.log(error)
+        res.render('settings', { error_text: req.query.error_text, keys: [] })
+      }
+      else
+      {
+        res.render('settings', { error_text: req.query.error_text, keys: results })
+      }
+    })
+  })
+})
+
+router.get('/rmsession', function(req, res, next)
+{
+  session_exists(req, res, function (user_id)
+  {
+    connection.query(`DELETE FROM sessions
+                      WHERE right(session_key, 4) = "${req.query.key}"
+                        and user_id = ${user_id}`, function (error, results, fields)
+    {
+      if (error)
+      {
+        console.log(error)
+        res.redirect(`/settings?error_text=Error deleting key ${req.query.key}`)
+      }
+      else
+      {
+        res.redirect('/settings')
+      }
+    })
+  })
 })
 
 router.post('/password', function(req, res, next)
 {
-  if (session_exists(req, res))
+  session_exists(req, res, function (user_id)
   {
     if (req.body.new1 == req.body.new2)
     {
-      connection.query(`UPDATE users, sessions SET password = password("${req.body.new1}")
-                        WHERE session_key = "${req.cookies.session}" and id = user_id
-                          and password = password("${req.body.old}")`, function (error, results, fields)
+      connection.query(`UPDATE users SET password = password("${req.body.new1}")
+                        WHERE id = ${user_id} and password = password("${req.body.old}")`, function (error, results, fields)
       {
         if (error) 
         {
           console.log(error)
-          res.render('settings', { error_text: 'Something went wrong' })
+          res.redirect('/settings?error_text=Something went wrong')
         }
         else
         {
           connection.query(`SELECT username FROM users
-                            INNER JOIN sessions ON session_key = "${req.cookies.session}"
-                            WHERE id = user_id and password = password("${req.body.new1}")`, function (error, results, fields)
+                            WHERE id = ${user_id} and password = password("${req.body.new1}")`, function (error, results, fields)
           {
             if (error) 
             {
               console.log(error)
-              res.render('settings', { error_text: 'Something went wrong' })
+              res.redirect('/settings?error_text=Something went wrong')
             }
             else if (results.length > 0)
             {
-              res.render('settings', { error_text: 'Successfully updated password' })
+              res.redirect('/settings?error_text=Successfully updated password')
             }
             else
             {
-              res.render('settings', { error_text: 'Incorrect password' })
+              res.redirect('/settings?error_text=Incorrect password')
             }
           })
         }
@@ -198,18 +250,18 @@ router.post('/password', function(req, res, next)
     }
     else
     {
-      res.render('settings', { error_text: 'Passwords do not match' })
+      res.redirect('/settings?error_text=Passwords do not match')
     }
-  }
+  })
 })
 
-router.post('/logout', function(req, res, next)
+router.get('/logout', function(req, res, next)
 {
-  if (session_exists(req, res))
+  session_exists(req, res, function (user_id)
   {
-    res.cookie('session', '', { maxAge: 0})
-    res.redirect('/')
-  }
+    let session = req.cookies.session
+    res.redirect(`/rmsession?key=${session.substr(session.length - 4)}`)
+  })
 })
 
 /**
@@ -217,7 +269,7 @@ router.post('/logout', function(req, res, next)
  */
 router.get('/delete', function(req, res, next)
 {
-  if (session_exists(req, res))
+  session_exists(req, res, function (user_id)
   {
     connection.query(`DELETE FROM transactions
                       WHERE id = "${req.query.id}"`, function (error, results, fields)
@@ -231,7 +283,7 @@ router.get('/delete', function(req, res, next)
         res.redirect('/history')
       }
     })
-  }
+  })
 })
 
 /**
@@ -239,12 +291,10 @@ router.get('/delete', function(req, res, next)
  */
 router.get('/add', function(req, res, next)
 {
-  if (session_exists(req, res))
+  session_exists(req, res, function (user_id)
   {
-    session = `"${req.cookies.session}"`
-    connection.query(`SELECT DISTINCT t.location FROM transactions as t
-                      INNER JOIN sessions as s ON s.session_key = ${session}
-                      WHERE t.user_id = s.user_id`, function (error, locations, fields)
+    connection.query(`SELECT DISTINCT location FROM transactions
+                      WHERE user_id = ${user_id}`, function (error, locations, fields)
     {
       if (error || locations.length <= 0)
       {
@@ -252,16 +302,14 @@ router.get('/add', function(req, res, next)
       }
       connection.query(`SELECT DISTINCT a.name FROM transactions as t
                         INNER JOIN accounts as a ON account_id = a.id
-                        INNER JOIN sessions as s ON s.session_key = ${session}
-                        WHERE t.user_id = s.user_id`, function (error, accounts, fields)
+                        WHERE t.user_id = ${user_id}`, function (error, accounts, fields)
       {
         if (error || accounts.length <= 0)
         {
           accounts = {}
         }
-        connection.query(`SELECT DISTINCT t.category FROM transactions as t
-                          INNER JOIN sessions as s ON s.session_key = ${session}
-                          WHERE t.user_id = s.user_id`, function (error, categories, fields)
+        connection.query(`SELECT DISTINCT category FROM transactions
+                          WHERE user_id = ${user_id}`, function (error, categories, fields)
         {
           if (error || categories.length <= 0)
           {
@@ -271,15 +319,14 @@ router.get('/add', function(req, res, next)
         })
       })
     })
-  }
+  })
 })
 
 router.post('/add', function(req, res, next)
 {
-  if (session_exists(req, res))
+  session_exists(req, res, function (user_id)
   {
     date        = process_date(req.body.date)
-    session     = `"${req.cookies.session}"`
     account     = `"${req.body.account}"`
     transfer    = `"${req.body.transfer}"`
     title       = `"${req.body.title}"`
@@ -290,10 +337,9 @@ router.post('/add', function(req, res, next)
     keep        = req.body.keep
     
     connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, category, note)
-                      SELECT s.user_id, a.id, ${date}, ${title}, ${location}, ${amount}, ${category}, ${note}
-                      FROM accounts as a
-                      INNER JOIN sessions as s ON s.session_key = ${session}
-                      WHERE a.name = ${account} and a.user_id = s.user_id`, function (error, results, fields)
+                      SELECT ${user_id}, id, ${date}, ${title}, ${location}, ${amount}, ${category}, ${note}
+                      FROM accounts
+                      WHERE name = ${account} and user_id = ${user_id}`, function (error, results, fields)
     {
       if (error)
       {
@@ -306,10 +352,9 @@ router.post('/add', function(req, res, next)
         {
           amount = `"-${req.body.amount}"`
           connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, category, note, linked_transaction)
-                            SELECT s.user_id, a.id, ${date}, ${title}, ${location}, ${amount}, ${category}, ${note}, max(t.id)
+                            SELECT ${user_id}, a.id, ${date}, ${title}, ${location}, ${amount}, ${category}, ${note}, max(t.id)
                             FROM accounts as a, transactions as t
-                            INNER JOIN sessions as s ON s.session_key = ${session}
-                            WHERE a.name = ${transfer} and t.user_id = s.user_id and a.user_id = s.user_id`, function (error, results, fields)
+                            WHERE a.name = ${transfer} and t.user_id = ${user_id} and a.user_id = ${user_id}`, function (error, results, fields)
           {
             if (error)
             {
@@ -318,9 +363,8 @@ router.post('/add', function(req, res, next)
             else
             {
               connection.query(`UPDATE transactions SET linked_transaction = 
-                                  (SELECT max(t.id) FROM transactions as t
-                                  INNER JOIN sessions as s ON s.session_key = ${session}
-                                  WHERE s.session_key = ${session} and t.user_id = s.user_id)
+                                  (SELECT max(id) FROM transactions
+                                  WHERE user_id = ${user_id})
                                 WHERE id = ${id}`, function (error, results, fields)
               {
                 if (error)
@@ -349,7 +393,7 @@ router.post('/add', function(req, res, next)
         }
       }
     })
-  }
+  })
 })
 
 /**
@@ -357,22 +401,18 @@ router.post('/add', function(req, res, next)
  */
 router.get('/add-account', function(req, res, next)
 {
-  if (session_exists(req, res))
+  session_exists(req, res, function (user_id)
   {
     res.render('add-account')
-  }
+  })
 })
 
 router.post('/add-account', function(req, res, next)
 {
-  if (session_exists(req, res))
+  session_exists(req, res, function (user_id)
   {
-    session = `"${req.cookies.session}"`
-    name    = `"${req.body.name}"`
-
-    connection.query(`SELECT a.id FROM accounts as a
-                      INNER JOIN sessions as s ON s.session_key = ${session}
-                      WHERE a.user_id = s.user_id and a.name = ${name}`, function (error, results, fields)
+    connection.query(`SELECT id FROM accounts
+                      WHERE user_id = ${user_id} and name = ${name}`, function (error, results, fields)
     {
       if (error)
       {
@@ -385,7 +425,7 @@ router.post('/add-account', function(req, res, next)
       else
       {
         connection.query(`INSERT INTO accounts (user_id, name)
-                          (SELECT user_id, ${name} FROM sessions WHERE session_key = ${session})`, function (error, results, fields)
+                          (${user_id}, ${name})`, function (error, results, fields)
         {
           if (error)
           {
@@ -398,7 +438,7 @@ router.post('/add-account', function(req, res, next)
         })
       }
     })
-  }
+  })
 })
 
 /**
@@ -406,20 +446,17 @@ router.post('/add-account', function(req, res, next)
  */
 router.get('/accounts', function(req, res, next)
 {
-  if (session_exists(req, res))
+  session_exists(req, res, function (user_id)
   {
-    session = `"${req.cookies.session}"`
-    connection.query(`SELECT sum(amount) as raw, format(sum(amount), 2) as balance, name
+    connection.query(`SELECT sum(t.amount) as raw, format(sum(t.amount), 2) as balance, a.name
                       FROM transactions as t
                       INNER JOIN accounts as a ON t.account_id = a.id
-                      INNER JOIN sessions as s ON s.session_key = ${session}
-                      WHERE t.user_id = s.user_id
+                      WHERE t.user_id = ${user_id}
                       GROUP BY account_id
                       UNION
-                      SELECT sum(t.amount) as raw, format(sum(t.amount), 2) as balance, "Total" as name
-                      FROM transactions as t
-                      INNER JOIN sessions as s ON s.session_key = ${session}
-                      WHERE t.user_id = s.user_id`, function (error, results, fields)
+                      SELECT sum(amount) as raw, format(sum(amount), 2) as balance, "Total" as name
+                      FROM transactions
+                      WHERE user_id = ${user_id}`, function (error, results, fields)
     {
       if (error)
       {
@@ -434,7 +471,7 @@ router.get('/accounts', function(req, res, next)
         res.send("No accounts found")
       }
     })
-  }
+  })
 })
 
 /**
@@ -442,7 +479,7 @@ router.get('/accounts', function(req, res, next)
  */
 router.get('/history', function(req, res, next)
 {
-  if (session_exists(req, res))
+  session_exists(req, res, function (user_id)
   {
     limit = 10
     if (req.query.limit !== undefined)  limit = req.query.limit
@@ -455,18 +492,17 @@ router.get('/history', function(req, res, next)
     category  = create_clause(req.query.category, 'AND t.category = "$VALUE"')
     note      = create_clause(req.query.note, 'AND t.note = "$VALUE"')
 
-    session = `"${req.cookies.session}"`
     connection.query(`(SELECT t.id, title, location, date_format(date, "%Y-%m-%d") as date, amount as raw, format(amount, 2) as amount, a.name, category, note, "Edit" as edtext, "Delete" as deltext
                         FROM transactions as t
-                        INNER JOIN accounts as a ON t.account_id = a.id INNER JOIN sessions as s ON s.session_key = ${session}
-                        WHERE t.user_id = s.user_id ${title} ${location} ${account} ${before} ${after} ${category} ${note}
+                        INNER JOIN accounts as a ON t.account_id = a.id
+                        WHERE t.user_id = ${user_id} ${title} ${location} ${account} ${before} ${after} ${category} ${note}
                         ORDER BY t.date DESC LIMIT ${limit})
                       UNION
                       (SELECT "" as id, "Total" as title, "" as location, "" as date, sum(s.amount) as raw, format(sum(s.amount), 2) as amount, "" as name, "" as category, "" as note, "" as edtext, "" as deltext
                         FROM (SELECT title, location, date, amount, a.name, category, note
                         FROM transactions as t
-                        INNER JOIN accounts as a ON t.account_id = a.id INNER JOIN sessions as s ON s.session_key = ${session}
-                        WHERE t.user_id = s.user_id ${title} ${location} ${account} ${before} ${after} ${category} ${note}
+                        INNER JOIN accounts as a ON t.account_id = a.id
+                        WHERE t.user_id = ${user_id} ${title} ${location} ${account} ${before} ${after} ${category} ${note}
                         ORDER BY t.date DESC LIMIT ${limit}) as s)`, 
                       function (error, results, fields)
     {
@@ -483,15 +519,14 @@ router.get('/history', function(req, res, next)
         res.send("No history found")
       }
     })
-  }
+  })
 })
 
 router.post('/history', function(req, res, next)
 {
-  if (session_exists(req, res))
+  session_exists(req, res, function (user_id)
   {
     date        = process_date(req.body.date)
-    uid         = `"${req.cookies.uid}"`
     account     = `"${req.body.account}"`
     title       = `"${req.body.title}"`
     location    = `"${req.body.location}"`
@@ -502,7 +537,7 @@ router.post('/history', function(req, res, next)
 
     connection.query(`UPDATE transactions as t, accounts as a SET account_id = a.id, date = ${date}, title = ${title}, location = ${location},
                         amount = ${amount}, category = ${category}, note = ${note}
-                      WHERE t.id = ${id} and name = ${account}`, function (error, results, fields)
+                      WHERE t.id = ${id} and a.name = ${account} and t.user_id = ${user_id}`, function (error, results, fields)
     {
       if (error)
       {
@@ -513,7 +548,7 @@ router.post('/history', function(req, res, next)
         res.redirect('/history')
       }
     })
-  }
+  })
 })
 
 module.exports = router

@@ -2,8 +2,8 @@ extends layout
 
 block content
   h2 Settings
-  h3 Change Password
   p.error #{error_text}
+  h3 Change Password
   form(name="password", method="post", action="/password")
     table
       tr
@@ -25,6 +25,22 @@ block content
         td
         td
           input(type="submit", value="Update")
-  h3 Session
-  form(name="logout", method="post", action="/logout")
+  h3 Sessions
+  form(name="logout", action="/logout")
     input(type="submit", value="Logout")
+  br
+  table(cellpadding="5px")
+    thead
+      tr
+        th Key
+        th Last Accessed
+        th Description
+        th Delete
+    tbody
+      each key in keys
+        tr.row
+          td= key.session_key
+          td= key.last_accessed
+          td= key.description
+          td
+            a(href="/rmsession?key=#{key.session_key}") Delete
