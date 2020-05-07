@@ -168,6 +168,58 @@ router.post('/login', function(req, res, next)
   })
 })
 
+router.post('/create', function(req, res, next)
+{
+  user = req.body.user
+  if (req.body.pass1 == req.body.pass2)
+  {
+    connection.query(`INSERT INTO users (username, password)
+                      VALUES ("${user}", password("${req.body.pass1}"))`, function (error, results, fields)
+    {
+      if (error) 
+      {
+        console.log(error)
+        res.render('login', { error_text: 'Failed to create account' })
+      }
+      else
+      {
+        connection.query(`SELECT id FROM users
+                          WHERE username = "${user}" and password = password("${req.body.pass1}")`, function (error, results, fields)
+        {
+          if (error) 
+          {
+            console.log(error)
+            res.render('login', { error_text: 'Failed to create account' })
+          }
+          else
+          {
+            uid = results[0].id
+            key = generate_key()
+            connection.query(`INSERT INTO sessions (session_key, user_id, last_accessed, description)
+                              VALUES ("${key}", "${uid}", now(), "${req.headers['user-agent']}")`, function (error, results, fields)
+            {
+              if (error)
+              {
+                console.log(error)
+                res.render('login', { error_text: 'Login failure' })
+              }
+              else
+              {
+                res.cookie('session', key, { maxAge: 2592000000})
+                res.redirect('/')
+              }
+            })
+          }
+        })
+      }
+    })
+  }
+  else
+  {
+    res.render('login', { error_text: `Passwords don't match` })
+  }
+})
+
 /**
  * Settings
  */
@@ -300,9 +352,8 @@ router.get('/add', function(req, res, next)
       {
         locations = {}
       }
-      connection.query(`SELECT DISTINCT a.name FROM transactions as t
-                        INNER JOIN accounts as a ON account_id = a.id
-                        WHERE t.user_id = ${user_id}`, function (error, accounts, fields)
+      connection.query(`SELECT DISTINCT name FROM accounts
+                        WHERE user_id = ${user_id}`, function (error, accounts, fields)
       {
         if (error || accounts.length <= 0)
         {
@@ -411,11 +462,13 @@ router.post('/add-account', function(req, res, next)
 {
   session_exists(req, res, function (user_id)
   {
+    let name = `"${req.body.name}"`
     connection.query(`SELECT id FROM accounts
                       WHERE user_id = ${user_id} and name = ${name}`, function (error, results, fields)
     {
       if (error)
       {
+        console.log(error)
         res.render('add-account', { error_text: 'Unknown error occured'})
       }
       else if (results.length > 0)
@@ -425,10 +478,11 @@ router.post('/add-account', function(req, res, next)
       else
       {
         connection.query(`INSERT INTO accounts (user_id, name)
-                          (${user_id}, ${name})`, function (error, results, fields)
+                          VALUES (${user_id}, ${name})`, function (error, results, fields)
         {
           if (error)
           {
+            console.log(error)
             res.render('add-account', { error_text: 'Unknown error occured'})
           }
           else

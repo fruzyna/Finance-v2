@@ -3,7 +3,7 @@ extends layout
 block content
   h2 Login
   p.error #{error_text}
-  form(name="login", method="post")
+  form(name="login", action="/login", method="post")
     table
       tr
         td
@@ -19,3 +19,26 @@ block content
         td
         td
           input(type="submit", value="Login")
+  
+  h2 Create Account
+  form(name="create", action="/create", method="post")
+    table
+      tr
+        td
+          span.label Username:
+        td
+          input(type="text", name="user")
+      tr
+        td
+          span.label Password:
+        td
+          input(type="password", name="pass1")
+      tr
+        td
+          span.label Repeat:
+        td
+          input(type="password", name="pass2")
+      tr
+        td
+        td
+          input(type="submit", value="Create")
