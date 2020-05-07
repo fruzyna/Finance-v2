@@ -316,6 +316,78 @@ router.get('/logout', function(req, res, next)
   })
 })
 
+router.get('/delete-account', function(req, res, next)
+{
+  session_exists(req, res, function (user_id)
+  {
+    connection.query(`SELECT username FROM users
+                      WHERE id = ${user_id} and password = password("${req.query.password}")`, function (error, results, fields)
+    {
+      if (error)
+      {
+        console.log(error)
+        res.redirect(`/settings?error_text=Error deleting account`)
+      }
+      else if (results.length > 0)
+      {
+        connection.query(`DELETE FROM transactions
+                          WHERE user_id = ${user_id}`, function (error, results, fields)
+        {
+          if (error)
+          {
+            console.log(error)
+            res.redirect(`/settings?error_text=Error deleting transactions`)
+          }
+          else
+          {
+            connection.query(`DELETE FROM accounts
+                              WHERE user_id = ${user_id}`, function (error, results, fields)
+            {
+              if (error)
+              {
+                console.log(error)
+                res.redirect(`/settings?error_text=Error deleting accounts`)
+              }
+              else
+              {
+                connection.query(`DELETE FROM sessions
+                                  WHERE user_id = ${user_id}`, function (error, results, fields)
+                {
+                  if (error)
+                  {
+                    console.log(error)
+                    res.redirect(`/settings?error_text=Error deleting sessions`)
+                  }
+                  else
+                  {
+                    connection.query(`DELETE FROM users
+                                      WHERE id = ${user_id}`, function (error, results, fields)
+                    {
+                      if (error)
+                      {
+                        console.log(error)
+                        res.redirect(`/settings?error_text=Error deleting account`)
+                      }
+                      else
+                      {
+                        res.redirect('/settings')
+                      }
+                    })
+                  }
+                })
+              }
+            })
+          }
+        })
+      }
+      else
+      {
+        res.redirect(`/settings?error_text=Invalid password`)
+      }
+    })
+  })
+})
+
 /**
  * Delete Entry
  */

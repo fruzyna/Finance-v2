@@ -1,6 +1,8 @@
 extends layout
 
 block content
+  script(src="/javascripts/delete-account.js")
+  
   h2 Settings
   p.error #{error_text}
   h3 Change Password
@@ -25,6 +27,7 @@ block content
         td
         td
           input(type="submit", value="Update")
+  
   h3 Sessions
   form(name="logout", action="/logout")
     input(type="submit", value="Logout")
@@ -44,3 +47,7 @@ block content
           td= key.description
           td
             a(href="/rmsession?key=#{key.session_key}") Delete
+  
+  h3 Delete Account
+  form(name="delete", action="javascript:deleteAccount()")
+    input(type="submit", value="Delete Account")
