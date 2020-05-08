@@ -7,7 +7,7 @@ block content
   p.error #{error_text}
   
   h3 Change Password
-  form(name="password", method="post", action="/password")
+  form(name="password", method="post", action="/settings/chpassword")
     table
       tr
         td
@@ -30,7 +30,7 @@ block content
           input(type="submit", value="Update")
   
   h3 Change Username
-  form(name="password", method="post", action="/username")
+  form(name="password", method="post", action="/settings/chusername")
     table
       tr
         td
@@ -48,7 +48,7 @@ block content
           input(type="submit", value="Update")
   
   h3 Sessions
-  form(name="logout", action="/logout")
+  form(name="logout", action="/settings/logout")
     input(type="submit", value="Logout")
   br
   table(cellpadding="5px")
@@ -65,7 +65,7 @@ block content
           td= key.last_accessed
           td= key.description
           td
-            a(href="/rmsession?key=#{key.session_key}") Delete
+            a(href="/settings/rmsession?key=#{key.session_key}") Delete
   
   h3 Delete Account
   form(name="delete", action="javascript:deleteAccount()")
