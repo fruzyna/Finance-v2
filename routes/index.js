@@ -69,7 +69,7 @@ router.get('/add', function(req, res, next)
           {
             categories = {}
           }
-          res.render('add', { title: 'Finance', locations: locations, accounts: accounts, categories: categories })
+          res.render('add', { title: 'Finance | Add Entry', q: req.query, locations: locations, accounts: accounts, categories: categories })
         })
       })
     })
@@ -89,6 +89,7 @@ router.post('/add', function(req, res, next)
     category    = `"${req.body.category}"`
     note        = `"${req.body.note}"`
     keep        = req.body.keep
+    qstr = `date=${req.body.date}&account=${req.body.account}&transfer=${req.body.transfer}&title=${req.body.title}&location=${req.body.location}&amount=${req.body.amount}&category=${req.body.category}&note=${req.body.note}`
     
     connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, category, note)
                       SELECT ${user_id}, id, ${date}, ${title}, ${location}, ${amount}, ${category}, ${note}
@@ -131,7 +132,7 @@ router.post('/add', function(req, res, next)
                 }
                 else
                 {
-                  res.redirect('/add')
+                  res.redirect(`/add?${qstr}`)
                 }
               })
             }
@@ -143,7 +144,7 @@ router.post('/add', function(req, res, next)
         }
         else
         {
-          res.redirect('/add')
+          res.redirect(`/add?${qstr}`)
         }
       }
     })

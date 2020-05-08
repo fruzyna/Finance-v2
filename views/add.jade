@@ -9,17 +9,17 @@ block content
         td
           span.label Date:
         td
-          input(type="text", name="date")
+          input(type="text", name="date", value="#{q.date || ''}")
       tr
         td
           span.label Title:
         td
-          input(type="text", name="title")
+          input(type="text", name="title", value="#{q.title || ''}")
       tr
         td
           span.label Location:
         td
-          input(type="text", list="locations", name="location", autocomplete="off")
+          input(type="text", list="locations", name="location", autocomplete="off", value="#{q.location || ''}")
           datalist(id="locations")
             each location in locations
               option(value="#{location.location}")
@@ -27,7 +27,7 @@ block content
         td
           span.label Account:
         td
-          input(type="text", list="accounts", name="account", autocomplete="off")
+          input(type="text", list="accounts", name="account", autocomplete="off", value="#{q.account || ''}")
           datalist(id="accounts")
             each account in accounts
               option(value="#{account.name}")
@@ -35,17 +35,17 @@ block content
         td
           span.label From:
         td
-          input(type="text", list="accounts", name="transfer")
+          input(type="text", list="accounts", name="transfer", value="#{q.transfer || ''}")
       tr
         td
           span.label Amount:
         td
-          input(type="number", step="0.01", name="amount")
+          input(type="number", step="0.01", name="amount", value="#{q.amount || ''}")
       tr
         td
           span.label Category:
         td
-          input(type="text", list="categories", name="category", autocomplete="off")
+          input(type="text", list="categories", name="category", autocomplete="off", value="#{q.category || ''}")
           datalist(id="categories")
             each category in categories
               option(value="#{category.category}")
@@ -53,7 +53,7 @@ block content
         td
           span.label Note:
         td
-          input(type="text", name="note")
+          input(type="text", name="note", value="#{q.note || ''}")
       tr
         td
         td
