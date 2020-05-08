@@ -264,6 +264,26 @@ router.get('/rmsession', function(req, res, next)
   })
 })
 
+router.post('/username', function(req, res, next)
+{
+  session_exists(req, res, function (user_id)
+  {
+    connection.query(`UPDATE users SET username = "${req.body.user}"
+                      WHERE id = ${user_id} and password = password("${req.body.pass}")`, function (error, results, fields)
+    {
+      if (error)
+      {
+        console.log(error)
+        res.redirect('/settings?error_text=Username already exists')
+      }
+      else
+      {
+        res.redirect('/settings?error_text=Successfully updated username')
+      }
+    })
+  })
+})
+
 router.post('/password', function(req, res, next)
 {
   session_exists(req, res, function (user_id)
@@ -276,27 +296,11 @@ router.post('/password', function(req, res, next)
         if (error) 
         {
           console.log(error)
-          res.redirect('/settings?error_text=Something went wrong')
+          res.redirect('/settings?error_text=Incorrect password')
         }
         else
         {
-          connection.query(`SELECT username FROM users
-                            WHERE id = ${user_id} and password = password("${req.body.new1}")`, function (error, results, fields)
-          {
-            if (error) 
-            {
-              console.log(error)
-              res.redirect('/settings?error_text=Something went wrong')
-            }
-            else if (results.length > 0)
-            {
-              res.redirect('/settings?error_text=Successfully updated password')
-            }
-            else
-            {
-              res.redirect('/settings?error_text=Incorrect password')
-            }
-          })
+          res.redirect('/settings?error_text=Successfully updated password')
         }
       })
     }

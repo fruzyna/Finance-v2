@@ -5,6 +5,7 @@ block content
   
   h2 Settings
   p.error #{error_text}
+  
   h3 Change Password
   form(name="password", method="post", action="/password")
     table
@@ -23,6 +24,24 @@ block content
           span.label Repeat New Password:
         td
           input(type="password", name="new2")
+      tr
+        td
+        td
+          input(type="submit", value="Update")
+  
+  h3 Change Username
+  form(name="password", method="post", action="/username")
+    table
+      tr
+        td
+          span.label New Username:
+        td
+          input(type="text", name="user")
+      tr
+        td
+          span.label Password:
+        td
+          input(type="password", name="pass")
       tr
         td
         td
