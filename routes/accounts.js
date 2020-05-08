@@ -8,15 +8,77 @@ var connection = mysql.createPool(config)
 
 var utils = require('./utils')
 
-
-/**
- * Add Account
- */
-router.get('/add', function(req, res, next)
+router.get('/', function(req, res, next)
 {
   utils.session_exists(connection, req, res, function (user_id)
   {
-    res.render('add-account')
+    connection.query(`SELECT a.name, ifnull(sum(t.amount),0) as raw, format(ifnull(sum(t.amount),0), 2) as balance
+                      FROM accounts as a
+                      LEFT OUTER JOIN transactions as t ON t.account_id = a.id
+                      WHERE a.user_id = ${user_id}
+                      GROUP BY a.name
+                      UNION
+                      SELECT "Total" as name, sum(amount) as raw, format(sum(amount), 2) as balance
+                      FROM transactions
+                      WHERE user_id = ${user_id}`, function (error, results, fields)
+    {
+      if (error)
+      {
+        res.send(error)
+      }
+      else if (results.length > 0)
+      {
+        edit = ''
+        if (req.query.edit !== undefined)
+        {
+          edit = req.query.edit
+        }
+        res.render('balances', { title: 'Finance | Accounts', accounts: results, edit:edit, error_text: req.query.error_text })
+      }
+      else
+      {
+        res.send("No accounts found")
+      }
+    })
+  })
+})
+
+router.post('/rename', function(req, res, next)
+{
+  utils.session_exists(connection, req, res, function (user_id)
+  {
+    let oldName = `"${req.body.oldname}"`
+    let newName = `"${req.body.newname}"`
+
+    connection.query(`UPDATE accounts SET name = ${newName}
+                      WHERE user_id = ${user_id} and name = ${oldName}`, function (error, results, fields)
+    {
+      if (error)
+      {
+        console.log(error)
+        res.redirect('/accounts?error_text=Error renaming account')
+      }
+      else
+      {
+        connection.query(`SELECT id FROM accounts
+                          WHERE user_id = ${user_id} and name = ${newName}`, function (error, results, fields)
+        {
+          if (error)
+          {
+            console.log(error)
+            res.redirect('/accounts?error_text=Error renaming account')
+          }
+          else if (results.length > 0)
+          {
+            res.redirect('/accounts')
+          }
+          else
+          {
+            res.redirect('/accounts?error_text=Failed to rename account')
+          }
+        })
+      }
+    })
   })
 })
 
@@ -31,11 +93,11 @@ router.post('/add', function(req, res, next)
       if (error)
       {
         console.log(error)
-        res.render('add-account', { error_text: 'Unknown error occured'})
+        res.redirect('/accounts?error_text=Error adding account')
       }
       else if (results.length > 0)
       {
-        res.render('add-account', { error_text: 'Account already exists'})
+        res.redirect('/accounts?error_text=Account already exists')
       }
       else
       {
@@ -45,7 +107,7 @@ router.post('/add', function(req, res, next)
           if (error)
           {
             console.log(error)
-            res.render('add-account', { error_text: 'Unknown error occured'})
+            res.redirect('/accounts?error_text=Error adding account')
           }
           else
           {
@@ -57,34 +119,39 @@ router.post('/add', function(req, res, next)
   })
 })
 
-/**
- * Account Balances
- */
-router.get('/', function(req, res, next)
+router.get('/delete', function(req, res, next)
 {
   utils.session_exists(connection, req, res, function (user_id)
   {
-    connection.query(`SELECT sum(t.amount) as raw, format(sum(t.amount), 2) as balance, a.name
-                      FROM transactions as t
-                      INNER JOIN accounts as a ON t.account_id = a.id
-                      WHERE t.user_id = ${user_id}
-                      GROUP BY account_id
-                      UNION
-                      SELECT sum(amount) as raw, format(sum(amount), 2) as balance, "Total" as name
-                      FROM transactions
-                      WHERE user_id = ${user_id}`, function (error, results, fields)
+    let name = `"${req.query.name}"`
+
+    connection.query(`DELETE FROM accounts
+                      WHERE user_id = ${user_id} and name = ${name}`, function (error, results, fields)
     {
       if (error)
       {
-        res.send(error)
-      }
-      else if (results.length > 0)
-      {
-        res.render('balances', { title: 'Finance', accounts: results})
+        console.log(error)
+        res.redirect('/accounts?error_text=Error deleting account')
       }
       else
       {
-        res.send("No accounts found")
+        connection.query(`SELECT id FROM accounts
+                          WHERE user_id = ${user_id} and name = ${name}`, function (error, results, fields)
+        {
+          if (error)
+          {
+            console.log(error)
+            res.redirect('/accounts?error_text=Error deleting account')
+          }
+          else if (results.length == 0)
+          {
+            res.redirect('/accounts')
+          }
+          else
+          {
+            res.redirect('/accounts?error_text=Failed to delete account')
+          }
+        })
       }
     })
   })

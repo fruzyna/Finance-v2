@@ -2,6 +2,7 @@ extends layout
 
 block content
   h2 Balances
+  p.error #{error_text}
   table(cellpadding="5px")#left
     thead
       tr: th Account
@@ -9,8 +10,26 @@ block content
     tbody
       each account in accounts
         tr.row
-          td= account.name
-          td.number= account.balance
+          if account.name == edit && account.name != "Total"
+            form(name="search", action="/accounts/rename" method="post")
+              input(type="text", name="oldname", value="#{account.name}").hidden
+              td
+                input(type="text", name="newname", value="#{account.name}")
+              td.number= account.balance
+              td
+                input(type="submit", name="save", value="Save")
+            td
+              a(href="/accounts/delete?name=#{account.name}") Delete
+          else
+            td
+              a(href="/accounts?edit=#{account.name}").textbutton= account.name
+            td.number= account.balance
+      tr
+        form(name="add-account", action="/accounts/add" method="post")
+          td
+            input(type="text", name="name")
+          td
+            input(type="submit", value="Add Account")
   div#plot
   script var plot_data = !{JSON.stringify(accounts)}
   script(src="/javascripts/plot-bar.js")

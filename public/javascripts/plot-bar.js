@@ -16,7 +16,7 @@ min -= adj;
 
 // svg dimensions
 var margin = {top: 50, right: 50, bottom: 50, left: 50};
-var width = 1250 - margin.left - margin.right;
+var width = 1000 - margin.left - margin.right;
 var height = 750 - margin.top - margin.bottom;
 
 // create svg
