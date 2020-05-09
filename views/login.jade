@@ -1,8 +1,8 @@
 extends layout
 
 block content
-  h2 Login
   p.error #{error_text}
+  h2 Login
   form(name="login", action="/login", method="post")
     table
       tr

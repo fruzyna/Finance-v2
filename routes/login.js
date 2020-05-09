@@ -10,7 +10,7 @@ var utils = require('./utils')
 
 router.get('/', function(req, res, next)
 {
-  res.render('login', { error_text: '' })
+  res.render('login', { error_text: req.query.error_text })
 })
 
 router.post('/', function(req, res, next)
@@ -22,7 +22,7 @@ router.post('/', function(req, res, next)
     if (error) 
     {
       console.log(error)
-      res.render('login', { error_text: 'Login failure' })
+      res.redirect('/login?error_text=Login failure')
     }
     else if (results.length > 0)
     {
@@ -34,7 +34,7 @@ router.post('/', function(req, res, next)
         if (error)
         {
           console.log(error)
-          res.render('login', { error_text: 'Login failure' })
+          res.redirect('/login?error_text=Login failure')
         }
         else
         {
@@ -43,32 +43,46 @@ router.post('/', function(req, res, next)
         }
       })
     }
-    else res.render('login', { error_text: 'Invalid username or password' })
+    else
+    {
+      res.redirect('/login?error_text=Invalid username or password')
+    }
   })
 })
 
 router.post('/create', function(req, res, next)
 {
   user = req.body.user
-  if (req.body.pass1 == req.body.pass2)
+  pass = req.body.pass1
+  user_valid = utils.validate_username(user)
+  pass_valid = utils.validate_password(pass, req.body.pass2)
+  if (user_valid != 'valid')
+  {
+    res.redirect(`/login?error_text=${user_valid}`)
+  }
+  else if (pass_valid != 'valid')
+  {
+    res.redirect(`/login?error_text=${pass_valid}`)
+  }
+  else
   {
     connection.query(`INSERT INTO users (username, password)
-                      VALUES ("${user}", password("${req.body.pass1}"))`, function (error, results, fields)
+                      VALUES ("${user}", password("${pass}"))`, function (error, results, fields)
     {
       if (error) 
       {
         console.log(error)
-        res.render('login', { error_text: 'Failed to create account' })
+        res.redirect('/login?error_text=Account already exists')
       }
       else
       {
         connection.query(`SELECT id FROM users
-                          WHERE username = "${user}" and password = password("${req.body.pass1}")`, function (error, results, fields)
+                          WHERE username = "${user}" and password = password("${pass}")`, function (error, results, fields)
         {
           if (error) 
           {
             console.log(error)
-            res.render('login', { error_text: 'Failed to create account' })
+            res.redirect('/login?error_text=Failed to create account')
           }
           else
           {
@@ -80,7 +94,7 @@ router.post('/create', function(req, res, next)
               if (error)
               {
                 console.log(error)
-                res.render('login', { error_text: 'Login failure' })
+                res.redirect('/login?error_text=Failed to login')
               }
               else
               {
@@ -92,10 +106,6 @@ router.post('/create', function(req, res, next)
         })
       }
     })
-  }
-  else
-  {
-    res.render('login', { error_text: `Passwords don't match` })
   }
 })
 

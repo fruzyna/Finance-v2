@@ -53,36 +53,45 @@ router.post('/chusername', function(req, res, next)
 {
   utils.session_exists(connection, req, res, function (user_id)
   {
-    connection.query(`UPDATE users SET username = "${req.body.user}"
-                      WHERE id = ${user_id} and password = password("${req.body.pass}")`, function (error, results, fields)
+    user = req.body.user
+    user_valid = utils.validate_username(user)
+    if (user_valid != 'valid')
     {
-      if (error)
+      res.redirect(`/settings?error_text=${user_valid}`)
+    }
+    else
+    {
+      connection.query(`UPDATE users SET username = "${user}"
+                        WHERE id = ${user_id} and password = password("${req.body.pass}")`, function (error, results, fields)
       {
-        console.log(error)
-        res.redirect('/settings?error_text=Username already exists')
-      }
-      else
-      {
-        connection.query(`SELECT username FROM users
-                          WHERE id = ${user_id} and username = "${req.body.user}"`, function (error, results, fields)
+        if (error)
         {
-          if (error) 
+          console.log(error)
+          res.redirect('/settings?error_text=Username already exists')
+        }
+        else
+        {
+          connection.query(`SELECT username FROM users
+                            WHERE id = ${user_id} and username = "${user}"`, function (error, results, fields)
           {
-            console.log(error)
-            res.redirect('/settings?error_text=Error changing username')
-          }
-          else if (results.length == 0) 
-          {
-            console.log(error)
-            res.redirect('/settings?error_text=Incorrect password')
-          }
-          else
-          {
-            res.redirect('/settings?error_text=Successfully updated username')
-          }
-        })
-      }
-    })
+            if (error) 
+            {
+              console.log(error)
+              res.redirect('/settings?error_text=Error changing username')
+            }
+            else if (results.length == 0) 
+            {
+              console.log(error)
+              res.redirect('/settings?error_text=Incorrect password')
+            }
+            else
+            {
+              res.redirect('/settings?error_text=Successfully updated username')
+            }
+          })
+        }
+      })
+    }
   })
 })
 
@@ -90,9 +99,15 @@ router.post('/chpassword', function(req, res, next)
 {
   utils.session_exists(connection, req, res, function (user_id)
   {
-    if (req.body.new1 == req.body.new2)
+    pass = req.body.new1
+    pass_valid = utils.validate_password(pass, req.body.new2)
+    if (pass_valid != 'valid')
     {
-      connection.query(`UPDATE users SET password = password("${req.body.new1}")
+      res.redirect(`/settings?error_text=${pass_valid}`)
+    }
+    else
+    {
+      connection.query(`UPDATE users SET password = password("${pass}")
                         WHERE id = ${user_id} and password = password("${req.body.old}")`, function (error, results, fields)
       {
         if (error) 
@@ -103,7 +118,7 @@ router.post('/chpassword', function(req, res, next)
         else
         {
           connection.query(`SELECT username FROM users
-                            WHERE id = ${user_id} and password = password("${req.body.new1}")`, function (error, results, fields)
+                            WHERE id = ${user_id} and password = password("${pass}")`, function (error, results, fields)
           {
             if (error) 
             {
@@ -122,10 +137,6 @@ router.post('/chpassword', function(req, res, next)
           })
         }
       })
-    }
-    else
-    {
-      res.redirect('/settings?error_text=Passwords do not match')
     }
   })
 })

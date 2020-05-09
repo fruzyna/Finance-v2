@@ -81,5 +81,27 @@ module.exports = {
             {
                 return format.replace('$VALUE', value)
             }
-        }
+        },
+        validate_password:
+            function validate_password(password, verify)
+            {
+                if (password != verify)
+                {
+                    return 'Passwords do not match'
+                }
+                else if (password.length < 8)
+                {
+                    return 'Password must be at least 8 characters'
+                }
+                return 'valid'
+            },
+        validate_username:
+            function validate_username(username)
+            {
+                if (!username.match(/^[0-9a-z]+$/))
+                {
+                  return 'Invalid character in username'
+                }
+                return 'valid'
+            }
 }
