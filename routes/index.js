@@ -80,16 +80,16 @@ router.post('/add', function(req, res, next)
 {
   utils.session_exists(connection, req, res, function (user_id)
   {
-    date        = utils.process_date(req.body.date)
-    account     = `"${req.body.account}"`
-    transfer    = `"${req.body.transfer}"`
-    title       = `"${req.body.title}"`
-    location    = `"${req.body.location}"`
-    amount      = `"${req.body.amount}"`
-    category    = `"${req.body.category}"`
-    note        = `"${req.body.note}"`
-    keep        = req.body.keep
-    qstr = `date=${req.body.date}&account=${req.body.account}&transfer=${req.body.transfer}&title=${req.body.title}&location=${req.body.location}&amount=${req.body.amount}&category=${req.body.category}&note=${req.body.note}`
+    let date        = utils.process_date(req.body.date)
+    let account     = utils.sanitize(req.body.account)
+    let transfer    = utils.sanitize(req.body.transfer)
+    let title       = utils.sanitize(req.body.title)
+    let location    = utils.sanitize(req.body.location)
+    let amount      = utils.sanitize(req.body.amount)
+    let category    = utils.sanitize(req.body.category)
+    let note        = utils.sanitize(req.body.note)
+    let keep        = req.body.keep
+    let qstr = `date=${req.body.date}&account=${req.body.account}&transfer=${req.body.transfer}&title=${req.body.title}&location=${req.body.location}&amount=${req.body.amount}&category=${req.body.category}&note=${req.body.note}`
     
     connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, category, note)
                       SELECT ${user_id}, id, ${date}, ${title}, ${location}, ${amount}, ${category}, ${note}
@@ -102,10 +102,10 @@ router.post('/add', function(req, res, next)
       }
       else
       {
-        id = results.insertId
+        let id = results.insertId
         if (req.body.transfer !== undefined && req.body.transfer != "")
         {
-          amount = `"-${req.body.amount}"`
+          let amount = utils.sanitize(-req.body.amount)
           connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, category, note, linked_transaction)
                             SELECT ${user_id}, a.id, ${date}, ${title}, ${location}, ${amount}, ${category}, ${note}, max(t.id)
                             FROM accounts as a, transactions as t

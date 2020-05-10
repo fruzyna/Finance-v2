@@ -16,7 +16,7 @@ router.get('/delete', function(req, res, next)
   utils.session_exists(connection, req, res, function (user_id)
   {
     connection.query(`DELETE FROM transactions
-                      WHERE id = "${req.query.id}"`, function (error, results, fields)
+                      WHERE id = ${utils.sanitize(req.query.id)}`, function (error, results, fields)
     {
       if (error)
       {
@@ -37,16 +37,19 @@ router.get('/', function(req, res, next)
 {
   utils.session_exists(connection, req, res, function (user_id)
   {
-    limit = 10
-    if (req.query.limit !== undefined)  limit = req.query.limit
+    let limit = 10
+    if (req.query.limit !== undefined)
+    {
+      limit = req.query.limit
+    }
 
-    title     = utils.create_clause(req.query.title, 'AND t.title LIKE "%$VALUE%"')
-    location  = utils.create_clause(req.query.location, 'AND t.location = "$VALUE"')
-    account   = utils.create_clause(req.query.account, 'AND a.name = "$VALUE"')
-    before    = utils.create_clause(req.query.before, `AND datediff(t.date, ${utils.process_date(req.query.before)}) < 0`)
-    after     = utils.create_clause(req.query.after, `AND datediff(t.date, ${utils.process_date(req.query.after)}) > 0`)
-    category  = utils.create_clause(req.query.category, 'AND t.category = "$VALUE"')
-    note      = utils.create_clause(req.query.note, 'AND t.note = "$VALUE"')
+    let title     = utils.create_clause(req.query.title, 'AND t.title LIKE "%$VALUE%"')
+    let location  = utils.create_clause(req.query.location, 'AND t.location = "$VALUE"')
+    let account   = utils.create_clause(req.query.account, 'AND a.name = "$VALUE"')
+    let before    = utils.create_clause(req.query.before, `AND datediff(t.date, ${utils.process_date(req.query.before)}) < 0`)
+    let after     = utils.create_clause(req.query.after, `AND datediff(t.date, ${utils.process_date(req.query.after)}) > 0`)
+    let category  = utils.create_clause(req.query.category, 'AND t.category = "$VALUE"')
+    let note      = utils.create_clause(req.query.note, 'AND t.note = "$VALUE"')
 
     connection.query(`(SELECT t.id, title, location, date_format(date, "%Y-%m-%d") as date, amount as raw, format(amount, 2) as amount, a.name, category, note, "Edit" as edtext, "Delete" as deltext
                         FROM transactions as t
@@ -82,14 +85,14 @@ router.post('/', function(req, res, next)
 {
   utils.session_exists(connection, req, res, function (user_id)
   {
-    date        = utils.process_date(req.body.date)
-    account     = `"${req.body.account}"`
-    title       = `"${req.body.title}"`
-    location    = `"${req.body.location}"`
-    amount      = `"${req.body.amount}"`
-    category    = `"${req.body.category}"`
-    note        = `"${req.body.note}"`
-    id          = `"${req.body.id}"`
+    let date        = utils.process_date(req.body.date)
+    let account     = utils.sanitize(req.body.account)
+    let title       = utils.sanitize(req.body.title)
+    let location    = utils.sanitize(req.body.location)
+    let amount      = utils.sanitize(req.body.amount)
+    let category    = utils.sanitize(req.body.category)
+    let note        = utils.sanitize(req.body.note)
+    let id          = utils.sanitize(req.body.id)
 
     connection.query(`UPDATE transactions as t, accounts as a SET account_id = a.id, date = ${date}, title = ${title}, location = ${location},
                         amount = ${amount}, category = ${category}, note = ${note}

@@ -28,7 +28,7 @@ router.get('/', function(req, res, next)
       }
       else if (results.length > 0)
       {
-        edit = ''
+        let edit = ''
         if (req.query.edit !== undefined)
         {
           edit = req.query.edit
@@ -47,8 +47,8 @@ router.post('/rename', function(req, res, next)
 {
   utils.session_exists(connection, req, res, function (user_id)
   {
-    let oldName = `"${req.body.oldname}"`
-    let newName = `"${req.body.newname}"`
+    let oldName = utils.sanitize(req.body.oldname)
+    let newName = utils.sanitize(req.body.newname)
 
     connection.query(`UPDATE accounts SET name = ${newName}
                       WHERE user_id = ${user_id} and name = ${oldName}`, function (error, results, fields)
@@ -86,7 +86,8 @@ router.post('/add', function(req, res, next)
 {
   utils.session_exists(connection, req, res, function (user_id)
   {
-    let name = `"${req.body.name}"`
+    let name = utils.sanitize(req.body.name)
+
     connection.query(`SELECT id FROM accounts
                       WHERE user_id = ${user_id} and name = ${name}`, function (error, results, fields)
     {
@@ -123,7 +124,7 @@ router.get('/delete', function(req, res, next)
 {
   utils.session_exists(connection, req, res, function (user_id)
   {
-    let name = `"${req.query.name}"`
+    let name = utils.sanitize(req.query.name)
 
     connection.query(`DELETE FROM accounts
                       WHERE user_id = ${user_id} and name = ${name}`, function (error, results, fields)
