@@ -18,11 +18,11 @@ router.get('/', function(req, res, next)
       if (error) 
       {
         console.log(error)
-        res.render('settings', { error_text: req.query.error_text, keys: [] })
+        res.render('settings', { title: 'Finance | Settings', error_text: req.query.error_text, keys: [] })
       }
       else
       {
-        res.render('settings', { error_text: req.query.error_text, keys: results })
+        res.render('settings', { title: 'Finance | Settings', error_text: req.query.error_text, keys: results })
       }
     })
   })

@@ -71,7 +71,7 @@ router.get('/', function(req, res, next)
       }
       else if (results.length > 0)
       {
-        res.render('history', { title: 'Finance', entries: results, query: req.query })
+        res.render('history', { title: 'Finance | History', entries: results, query: req.query })
       }
       else
       {

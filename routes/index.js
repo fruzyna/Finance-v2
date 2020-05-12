@@ -31,7 +31,7 @@ router.get('/', function(req, res, next)
       }
       else if (results.length > 0)
       {
-        res.render('index', { name: results[results.length-1].name, total: results[results.length-1].amount, totals: results })
+        res.render('index', { title: 'Finance', name: results[results.length-1].name, total: results[results.length-1].amount, totals: results })
       }
       else
       {
