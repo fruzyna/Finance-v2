@@ -150,6 +150,39 @@ router.get('/logout', function(req, res, next)
   })
 })
 
+router.get('/export', function(req, res, next)
+{
+  utils.session_exists(connection, req, res, function (user_id)
+  {
+    connection.query(`SELECT t.id, t.title, t.location, date_format(t.date, "%Y-%m-%d") as date, t.amount, a.name, t.category, t.note, t.linked_transaction
+                      FROM transactions as t
+                      INNER JOIN accounts as a ON t.account_id = a.id
+                      WHERE t.user_id = ${user_id}
+                      ORDER BY t.date DESC`, function (error, results, fields)
+    {
+      if (error)
+      {
+        console.log(error)
+        res.redirect(`/settings?error_text=Error exporting account`)
+      }
+      else if (results.length == 0)
+      {
+        res.redirect(`/settings?error_text=No transactions found`)
+      }
+      else
+      {
+        csvTxt = 'id,title,location,date,amount,account,category,note,linked_transaction\n'
+        results.forEach(function (r, index)
+        {
+          csvTxt += `${r.id},${r.title},${r.location},${r.date},${r.amount},${r.name},${r.category},${r.note},${r.linked_transaction}\n`
+        })
+        res.set({'Content-Disposition': 'attachment; filename="finance-export.csv"'})
+        res.send(csvTxt)
+      }
+    })
+  })
+})
+
 router.get('/delete-account', function(req, res, next)
 {
   utils.session_exists(connection, req, res, function (user_id)

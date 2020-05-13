@@ -6,67 +6,78 @@ block content
   h2 Settings
   p.error #{error_text}
   
-  h3 Change Password
-  form(name="password", method="post", action="/settings/chpassword")
-    table
-      tr
-        td
-          span.label Old Password:
-        td
-          input(type="password", name="old")
-      tr
-        td
-          span.label New Password:
-        td
-          input(type="password", name="new1")
-      tr
-        td
-          span.label Repeat New Password:
-        td
-          input(type="password", name="new2")
-      tr
-        td
-        td
-          input(type="submit", value="Update")
-  
-  h3 Change Username
-  form(name="password", method="post", action="/settings/chusername")
-    table
-      tr
-        td
-          span.label New Username:
-        td
-          input(type="text", name="user")
-      tr
-        td
-          span.label Password:
-        td
-          input(type="password", name="pass")
-      tr
-        td
-        td
-          input(type="submit", value="Update")
-  
-  h3 Sessions
-  form(name="logout", action="/settings/logout")
-    input(type="submit", value="Logout")
-  br
-  table(cellpadding="5px")
-    thead
-      tr
-        th Key
-        th Last Accessed
-        th Description
-        th Delete
-    tbody
-      each key in keys
-        tr.row
-          td= key.session_key
-          td= key.last_accessed
-          td= key.description
-          td
-            a(href="/settings/rmsession?key=#{key.session_key}") Delete
-  
-  h3 Delete Account
-  form(name="delete", action="javascript:deleteAccount()")
-    input(type="submit", value="Delete Account")
+  table
+    tr
+      td(valign="top")
+        h3 Change Username
+        form(name="password", method="post", action="/settings/chusername")
+          table
+            tr
+              td
+                span.label New Username:
+              td
+                input(type="text", name="user")
+            tr
+              td
+                span.label Password:
+              td
+                input(type="password", name="pass")
+            tr
+              td
+              td
+                input(type="submit", value="Update")
+      td
+        h3 Change Password
+        form(name="password", method="post", action="/settings/chpassword")
+          table
+            tr
+              td
+                span.label Old Password:
+              td
+                input(type="password", name="old")
+            tr
+              td
+                span.label New Password:
+              td
+                input(type="password", name="new1")
+            tr
+              td
+                span.label Repeat New Password:
+              td
+                input(type="password", name="new2")
+            tr
+              td
+              td
+                input(type="submit", value="Update")
+    tr
+      td(colspan="2")
+        h3 Sessions
+        form(name="logout", action="/settings/logout")
+          input(type="submit", value="Logout")
+        br
+        table(cellpadding="5px")
+          thead
+            tr
+              th Key
+              th Last Accessed
+              th Description
+              th Delete
+          tbody
+            each key in keys
+              tr.row
+                td= key.session_key
+                td= key.last_accessed
+                td= key.description
+                td
+                  a(href="/settings/rmsession?key=#{key.session_key}") Delete
+    tr
+      td
+        h3 Export Transactions
+        p This will export all your transactions in a CSV format.
+        form(name="export", action="/settings/export")
+          input(type="submit", value="Export")
+      td
+        h3 Delete Account
+        p This will delete all data related to your account. It will be lost forever.
+        form(name="delete", action="javascript:deleteAccount()")
+          input(type="submit", value="Delete Account")
