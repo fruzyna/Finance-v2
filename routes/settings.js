@@ -127,7 +127,6 @@ router.post('/chpassword', function(req, res, next)
             }
             else if (results.length == 0) 
             {
-              console.log(error)
               res.redirect('/settings?error_text=Incorrect password')
             }
             else

@@ -67,15 +67,16 @@ router.get('/', function(req, res, next)
     {
       if (error)
       {
-        res.send(error)
+        console.log(error)
+        res.render('history', { error_text: 'Error making search', title: 'Finance | History', entries: results, query: req.query })
       }
-      else if (results.length > 0)
+      else if (results.length > 1)
       {
-        res.render('history', { title: 'Finance | History', entries: results, query: req.query })
+        res.render('history', { error_text: req.query.error_text, title: 'Finance | History', entries: results, query: req.query })
       }
       else
       {
-        res.send("No history found")
+        res.render('history', { error_text: 'No results found', title: 'Finance | History', entries: results, query: req.query })
       }
     })
   })
@@ -100,7 +101,8 @@ router.post('/', function(req, res, next)
     {
       if (error)
       {
-        res.send(error)
+        console.log(error)
+        res.redirect('/history?error_text=Error editing transaction')
       }
       else
       {

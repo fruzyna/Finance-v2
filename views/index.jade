@@ -2,6 +2,7 @@ extends layout
 
 block content
   h2 Home
+  p.error #{error_text}
   p Welcome #{name}! You have $#{total}!
   div#plot
   script var plot_data = !{JSON.stringify(totals)}

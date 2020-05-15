@@ -27,11 +27,12 @@ router.get('/', function(req, res, next)
     {
       if (error)
       {
-        res.send(error)
+        console.log(error)
+        res.render('index', { error_text: 'Error getting account info', title: 'Finance', name: '', total: 0, totals: [] })
       }
       else if (results.length > 0)
       {
-        res.render('index', { title: 'Finance', name: results[results.length-1].name, total: results[results.length-1].amount, totals: results })
+        res.render('index', { error_text: '', title: 'Finance', name: results[results.length-1].name, total: results[results.length-1].amount, totals: results })
       }
       else
       {
@@ -69,7 +70,7 @@ router.get('/add', function(req, res, next)
           {
             categories = {}
           }
-          res.render('add', { title: 'Finance | Add Entry', q: req.query, locations: locations, accounts: accounts, categories: categories })
+          res.render('add', { error_text: req.query.error_text, title: 'Finance | Add Entry', q: req.query, locations: locations, accounts: accounts, categories: categories })
         })
       })
     })
@@ -98,7 +99,8 @@ router.post('/add', function(req, res, next)
     {
       if (error)
       {
-        res.send(error)
+        console.log(error)
+        res.redirect(`/add?${qstr}&error_text=Error creating transaction`)
       }
       else
       {
@@ -113,7 +115,8 @@ router.post('/add', function(req, res, next)
           {
             if (error)
             {
-              res.send(error)
+              console.log(error)
+              res.redirect(`/add?${qstr}&error_text=Error creating transaction`)
             }
             else
             {
@@ -124,7 +127,8 @@ router.post('/add', function(req, res, next)
               {
                 if (error)
                 {
-                  res.send(error)
+                  console.log(error)
+                  res.redirect(`/add?${qstr}&error_text=Error linking transactions`)
                 }
                 else if (!keep)
                 {
