@@ -51,13 +51,13 @@ router.get('/', function(req, res, next)
     let category  = utils.create_clause(req.query.category, 'AND t.category = "$VALUE"')
     let note      = utils.create_clause(req.query.note, 'AND t.note = "$VALUE"')
 
-    connection.query(`(SELECT t.id, title, location, date_format(date, "%Y-%m-%d") as date, amount as raw, format(amount, 2) as amount, a.name, category, note, "Edit" as edtext, "Delete" as deltext
+    connection.query(`(SELECT t.id, title, location, date_format(date, "%Y-%m-%d") as date, round(amount, 2) as raw, format(amount, 2) as amount, a.name, category, note, "Edit" as edtext, "Delete" as deltext
                         FROM transactions as t
                         INNER JOIN accounts as a ON t.account_id = a.id
                         WHERE t.user_id = ${user_id} ${title} ${location} ${account} ${before} ${after} ${category} ${note}
                         ORDER BY t.date DESC LIMIT ${limit})
                       UNION
-                      (SELECT "" as id, "Total" as title, "" as location, "" as date, sum(s.amount) as raw, format(sum(s.amount), 2) as amount, "" as name, "" as category, "" as note, "" as edtext, "" as deltext
+                      (SELECT "" as id, "Total" as title, "" as location, "" as date, round(sum(s.amount), 2) as raw, format(sum(s.amount), 2) as amount, "" as name, "" as category, "" as note, "" as edtext, "" as deltext
                         FROM (SELECT title, location, date, amount, a.name, category, note
                         FROM transactions as t
                         INNER JOIN accounts as a ON t.account_id = a.id
