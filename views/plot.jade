@@ -1,0 +1,29 @@
+extends layout
+
+block content
+  h2 History
+  p.error #{error_text}
+  form(name="search", method="get")#left
+    table
+      tr
+        td
+          span.label Account:
+        td
+          input(type="text", value="#{query.account||''}", name="account")
+      tr
+        td
+          span.label After:
+        td
+          input(type="text", value="#{query.after||''}", name="after")
+      tr
+        td
+          span.label Before:
+        td
+          input(type="text", value="#{query.before||''}", name="before")
+      tr
+        td
+        td
+          input(type="submit", value="Plot")
+  div#plot
+  script var plot_data = !{JSON.stringify(totals)}
+  script(src="/javascripts/plot-line.js")
