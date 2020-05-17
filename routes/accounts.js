@@ -126,8 +126,9 @@ router.get('/delete', function(req, res, next)
   {
     let name = utils.sanitize(req.query.name)
 
-    connection.query(`DELETE FROM accounts
-                      WHERE user_id = ${user_id} and name = ${name}`, function (error, results, fields)
+    connection.query(`DELETE FROM transactions
+                      WHERE user_id = ${user_id} and account_id = (SELECT id FROM accounts 
+                        WHERE user_id = ${user_id} and name = ${name})`, function (error, results, fields)
     {
       if (error)
       {
@@ -136,7 +137,7 @@ router.get('/delete', function(req, res, next)
       }
       else
       {
-        connection.query(`SELECT id FROM accounts
+        connection.query(`DELETE FROM accounts
                           WHERE user_id = ${user_id} and name = ${name}`, function (error, results, fields)
         {
           if (error)
@@ -144,13 +145,25 @@ router.get('/delete', function(req, res, next)
             console.log(error)
             res.redirect('/accounts?error_text=Error deleting account')
           }
-          else if (results.length == 0)
-          {
-            res.redirect('/accounts')
-          }
           else
           {
-            res.redirect('/accounts?error_text=Failed to delete account')
+            connection.query(`SELECT id FROM accounts
+                              WHERE user_id = ${user_id} and name = ${name}`, function (error, results, fields)
+            {
+              if (error)
+              {
+                console.log(error)
+                res.redirect('/accounts?error_text=Error deleting account')
+              }
+              else if (results.length == 0)
+              {
+                res.redirect('/accounts')
+              }
+              else
+              {
+                res.redirect('/accounts?error_text=Failed to delete account')
+              }
+            })
           }
         })
       }
