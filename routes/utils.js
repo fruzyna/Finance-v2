@@ -77,7 +77,7 @@ function create_clause(value, format)
     }
     else
     {
-        return format.replace('$VALUE', value)
+        return format.replace(/\$VALUE/g, value)
     }
 }
 

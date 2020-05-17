@@ -58,6 +58,7 @@ block content
           th Account
           th Category
           th Note
+          th Linked To
           th Edit
           th Delete
     tbody
@@ -80,6 +81,8 @@ block content
               td
                 input(type="text", name="note", value="#{entry.note}")
               td
+                a(href="/history?id=#{entry.linked_transaction}")= entry.linked_transaction
+              td
                 input(type="submit", value="Save")
               td
                 input(type="text", name="id", value="#{entry.id}").hidden
@@ -91,6 +94,8 @@ block content
             td= entry.name
             td= entry.category
             td= entry.note
+            td
+              a(href="/history?id=#{entry.linked_transaction}")= entry.linked_transaction
             td
               a(href="/history?edit=#{entry.id}")= entry.edtext
             td

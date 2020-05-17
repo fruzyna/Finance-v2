@@ -132,7 +132,7 @@ router.post('/add', function(req, res, next)
                 }
                 else if (!keep)
                 {
-                  res.redirect('/history')
+                  res.redirect(`/history?id=${id}`)
                 }
                 else
                 {
@@ -144,7 +144,7 @@ router.post('/add', function(req, res, next)
         }
         else if (!keep)
         {
-          res.redirect('/history')
+          res.redirect(`/history?id=${id}`)
         }
         else
         {
