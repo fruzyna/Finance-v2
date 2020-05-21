@@ -52,7 +52,7 @@ var yScale = d3.scaleLinear()
 
 var xAxis = d3.axisBottom(xScale)
                 .tickFormat((interval,i) => {
-                    return i%parseInt(dates.length/(width/100)) !== 0 ? " ": interval;
+                    return i%parseInt(dates.length/(width/75)) !== 0 ? " ": interval;
                 })
 
 svg.append("g")
