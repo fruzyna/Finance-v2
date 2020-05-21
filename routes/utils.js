@@ -44,26 +44,26 @@ function session_exists(connection, req, res, response)
     {
         // check if session key is valid
         connection.query(`SELECT user_id FROM sessions
-                        WHERE session_key = "${session}"`, function (error, results, fields)
+                          WHERE session_key = "${session}"`, function (error, results, fields)
         {
-        if (error)
-        {
-            res.send(error)
-        }
-        else if (results.length > 0)
-        {
-            // update the last time this key was accessed
-            connection.query(`UPDATE sessions SET last_accessed = now()
-                            WHERE session_key = "${session}"`)
+            if (error)
+            {
+                res.send(error)
+            }
+            else if (results.length > 0)
+            {
+                // update the last time this key was accessed
+                connection.query(`UPDATE sessions SET last_accessed = now()
+                                  WHERE session_key = "${session}"`)
 
-            // respond to request
-            response(sanitize(results[0].user_id))
-        }
-        else
-        {
-            res.cookie('session', '', { maxAge: 0})
-            res.redirect('/login')
-        }
+                // respond to request
+                response(sanitize(results[0].user_id))
+            }
+            else
+            {
+                res.cookie('session', '', { maxAge: 0})
+                res.redirect('/login')
+            }
         })
     }
 }
