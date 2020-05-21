@@ -1,6 +1,6 @@
 // clean up data, and determine bounds
-var min = 0;
-var max = 0;
+var min = 0
+var max = 0
 accounts = []
 plot_data.forEach(function (account, index)
 {
@@ -8,54 +8,70 @@ plot_data.forEach(function (account, index)
     if (account.name != "Total")
     {
         accounts.push(account)
-        let bal = Number(account.raw);
-        account.balance = bal;
+        let bal = Number(account.raw)
+        account.balance = bal
         if (bal > max)
-            max = bal;
+            max = bal
         else if (bal < min)
-            min = bal;
+            min = bal
     }
 });
-var adj = (max - min) * 0.1;
-max += adj;
-min -= adj;
+var adj = (max - min) * 0.1
+max += adj
+min -= adj
 
 // svg dimensions
-var margin = {top: 50, right: 50, bottom: 50, left: 50};
-var width = 1000 - margin.left - margin.right;
-var height = 750 - margin.top - margin.bottom;
+var margin = {top: 50, right: 50, bottom: 50, left: 100}
+var width = window.innerWidth / 2 - margin.left - margin.right
+var height = window.innerHeight / 2 - margin.top - margin.bottom
 
 // create svg
 var svg = d3.select("#plot").append("svg")
     .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom);
+    .attr("height", height + margin.top + margin.bottom)
     
-var g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+var g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 
 // build axes
 var x = d3.scaleBand()
 	.rangeRound([0, width])
-	.padding(0.1);
+	.padding(0.05)
 
-var y = d3.scaleLinear().rangeRound([height, 0]);
+var y = d3.scaleLinear().rangeRound([height, 0])
 
-x.domain(accounts.map(function (d) { return d.name; }));
+x.domain(accounts.map(function (d) { return d.name; }))
 
-y.domain([min, max]);
+y.domain([min, max])
+
+g.append("g")
+    .append("text")
+        .attr("x", (1/2) * width)             
+        .attr("y", -(1/2) * margin.top)
+        .attr("text-anchor", "middle")
+        .style("font-size", "24px") 
+        .text("Account Totals")
 
 g.append("g")
     .attr("transform", "translate(0," + height + ")")
-    .call(d3.axisBottom(x));
+    .call(d3.axisBottom(x))
+    .append("text")
+        .attr("fill", "#000")
+        .attr("y", (3/4) * margin.bottom)
+        .attr("x", (1/2) * width)
+        .attr("dy", "0.71em")
+        .attr("text-anchor", "middle")
+        .text("Account")
 
 g.append("g")
     .call(d3.axisLeft(y))
     .append("text")
         .attr("fill", "#000")
         .attr("transform", "rotate(-90)")
-        .attr("y", 6)
+        .attr("y", -(3/4) * margin.left)
+        .attr("x", -(1/2) * height)
         .attr("dy", "0.71em")
-        .attr("text-anchor", "end")
-        .text("Balance");
+        .attr("text-anchor", "middle")
+        .text("Balance")
 
 // create bars
 g.selectAll(".bar")
@@ -78,4 +94,4 @@ g.selectAll(".bar")
             return "#0A0";
         else
             return "#A00";
-    });
+    })
