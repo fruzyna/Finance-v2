@@ -20,7 +20,7 @@ router.get('/delete', function(req, res, next)
     {
       if (error)
       {
-        res.send(`Error deleting entry ${req.query.id}`)
+        res.redirect(`/history?error_text=Error deleting entry ${req.query.id}`)
       }
       else
       {
@@ -69,15 +69,15 @@ router.get('/', function(req, res, next)
       if (error)
       {
         console.log(error)
-        res.render('history', { error_text: 'Error making search', title: 'Finance | History', entries: results, query: req.query })
+        res.render('history', { error_text: 'Error making search', title: 'Finance | History', entries: results, query: req.query, url: req.url.substr(1) })
       }
       else if (results.length > 1)
       {
-        res.render('history', { error_text: req.query.error_text, title: 'Finance | History', entries: results, query: req.query })
+        res.render('history', { error_text: req.query.error_text, title: 'Finance | History', entries: results, query: req.query, url: req.url.substr(1) })
       }
       else
       {
-        res.render('history', { error_text: 'No results found', title: 'Finance | History', entries: results, query: req.query })
+        res.render('history', { error_text: 'No results found', title: 'Finance | History', entries: results, query: req.query, url: req.url.substr(1) })
       }
     })
   })
@@ -107,7 +107,7 @@ router.post('/', function(req, res, next)
       }
       else
       {
-        res.redirect('/history')
+        res.redirect(`/history?id=${req.body.id}`)
       }
     })
   })
