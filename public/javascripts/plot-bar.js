@@ -1,14 +1,20 @@
 // clean up data, and determine bounds
 var min = 0;
 var max = 0;
+accounts = []
 plot_data.forEach(function (account, index)
 {
-    let bal = Number(account.raw);
-    account.balance = bal;
-    if (bal > max)
-        max = bal;
-    else if (bal < min)
-        min = bal;
+    // ignore total
+    if (account.name != "Total")
+    {
+        accounts.push(account)
+        let bal = Number(account.raw);
+        account.balance = bal;
+        if (bal > max)
+            max = bal;
+        else if (bal < min)
+            min = bal;
+    }
 });
 var adj = (max - min) * 0.1;
 max += adj;
@@ -33,7 +39,7 @@ var x = d3.scaleBand()
 
 var y = d3.scaleLinear().rangeRound([height, 0]);
 
-x.domain(plot_data.map(function (d) { return d.name; }));
+x.domain(accounts.map(function (d) { return d.name; }));
 
 y.domain([min, max]);
 
@@ -53,7 +59,7 @@ g.append("g")
 
 // create bars
 g.selectAll(".bar")
-    .data(plot_data)
+    .data(accounts)
     .enter().append("rect")
     .attr("class", "bar")
     .attr("x", function (d) { return x(d.name); })
