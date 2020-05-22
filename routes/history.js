@@ -52,33 +52,57 @@ router.get('/', function(req, res, next)
     let category  = utils.create_clause(req.query.category, 'AND t.category = "$VALUE"')
     let note      = utils.create_clause(req.query.note, 'AND t.note = "$VALUE"')
 
-    connection.query(`(SELECT t.id, title, location, date_format(date, "%Y-%m-%d") as date, round(amount, 2) as raw, format(amount, 2) as amount, a.name, category, note, linked_transaction, "Edit" as edtext, "Delete" as deltext
-                        FROM transactions as t
-                        INNER JOIN accounts as a ON t.account_id = a.id
-                        WHERE t.user_id = ${user_id} ${id} ${title} ${location} ${account} ${before} ${after} ${category} ${note}
-                        ORDER BY t.date DESC LIMIT ${limit})
-                      UNION
-                      (SELECT "" as id, "Total" as title, "" as location, "" as date, round(sum(s.amount), 2) as raw, format(sum(s.amount), 2) as amount, "" as name, "" as category, "" as note, "" as linked_transaction, "" as edtext, "" as deltext
-                        FROM (SELECT title, location, date, amount, a.name, category, note
-                        FROM transactions as t
-                        INNER JOIN accounts as a ON t.account_id = a.id
-                        WHERE t.user_id = ${user_id} ${id} ${title} ${location} ${account} ${before} ${after} ${category} ${note}
-                        ORDER BY t.date DESC LIMIT ${limit}) as s)`, 
-                      function (error, results, fields)
+    connection.query(`SELECT DISTINCT location FROM transactions
+                      WHERE user_id = ${user_id}`, function (error, locations, fields)
     {
-      if (error)
+      if (error || locations.length <= 0)
       {
-        console.log(error)
-        res.render('history', { error_text: 'Error making search', title: 'Finance | History', entries: results, query: req.query, url: req.url.substr(1) })
+        locations = {}
       }
-      else if (results.length > 1)
+      connection.query(`SELECT DISTINCT name FROM accounts
+                        WHERE user_id = ${user_id}`, function (error, accounts, fields)
       {
-        res.render('history', { error_text: req.query.error_text, title: 'Finance | History', entries: results, query: req.query, url: req.url.substr(1) })
-      }
-      else
-      {
-        res.render('history', { error_text: 'No results found', title: 'Finance | History', entries: results, query: req.query, url: req.url.substr(1) })
-      }
+        if (error || accounts.length <= 0)
+        {
+          accounts = {}
+        }
+        connection.query(`SELECT DISTINCT category FROM transactions
+                          WHERE user_id = ${user_id}`, function (error, categories, fields)
+        {
+          if (error || categories.length <= 0)
+          {
+            categories = {}
+          }
+          connection.query(`(SELECT t.id, title, location, date_format(date, "%Y-%m-%d") as date, round(amount, 2) as raw, format(amount, 2) as amount, a.name, category, note, linked_transaction, "Edit" as edtext, "Delete" as deltext
+                              FROM transactions as t
+                              INNER JOIN accounts as a ON t.account_id = a.id
+                              WHERE t.user_id = ${user_id} ${id} ${title} ${location} ${account} ${before} ${after} ${category} ${note}
+                              ORDER BY t.date DESC LIMIT ${limit})
+                            UNION
+                            (SELECT "" as id, "Total" as title, "" as location, "" as date, round(sum(s.amount), 2) as raw, format(sum(s.amount), 2) as amount, "" as name, "" as category, "" as note, "" as linked_transaction, "" as edtext, "" as deltext
+                              FROM (SELECT title, location, date, amount, a.name, category, note
+                              FROM transactions as t
+                              INNER JOIN accounts as a ON t.account_id = a.id
+                              WHERE t.user_id = ${user_id} ${id} ${title} ${location} ${account} ${before} ${after} ${category} ${note}
+                              ORDER BY t.date DESC LIMIT ${limit}) as s)`,
+                            function (error, results, fields)
+          {
+            if (error)
+            {
+              console.log(error)
+              res.render('history', { error_text: 'Error making search', title: 'Finance | History', entries: results, query: req.query, url: req.url.substr(1), locations: locations, accounts: accounts, categories: categories })
+            }
+            else if (results.length > 1)
+            {
+              res.render('history', { error_text: req.query.error_text, title: 'Finance | History', entries: results, query: req.query, url: req.url.substr(1), locations: locations, accounts: accounts, categories: categories })
+            }
+            else
+            {
+              res.render('history', { error_text: 'No results found', title: 'Finance | History', entries: results, query: req.query, url: req.url.substr(1), locations: locations, accounts: accounts, categories: categories })
+            }
+          })
+        })
+      })
     })
   })
 })

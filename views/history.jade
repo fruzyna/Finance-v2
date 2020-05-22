@@ -19,12 +19,18 @@ block content
         td
           span.label Location:
         td
-          input(type="text", value="#{query.location||''}", name="location")
+          input(type="text", list="locations", name="location", autocomplete="off", value="#{query.location || ''}")
+          datalist(id="locations")
+            each location in locations
+              option(value="#{location.location}")
       tr
         td
           span.label Account:
         td
-          input(type="text", value="#{query.account||''}", name="account")
+          input(type="text", list="accounts", name="account", autocomplete="off", value="#{query.account || ''}")
+          datalist(id="accounts")
+            each account in accounts
+              option(value="#{account.name}")
       tr
         td
           span.label After:
@@ -39,7 +45,10 @@ block content
         td
           span.label Category:
         td
-          input(type="text", value="#{query.category||''}", name="category")
+          input(type="text", list="categories", name="category", autocomplete="off", value="#{query.category || ''}")
+          datalist(id="categories")
+            each category in categories
+              option(value="#{category.category}")
       tr
         td
           span.label Note:
@@ -69,15 +78,24 @@ block content
               td
                 input(type="text", name="title", value="#{entry.title}")
               td
-                input(type="text", list="locations", name="location", autocomplete="off", value="#{entry.location}")
+                input(type="text", list="locations", name="location", autocomplete="off", value="#{entry.location || ''}")
+                datalist(id="locations")
+                  each location in locations
+                    option(value="#{location.location}")
               td
                 input(type="text", name="date", value="#{entry.date}")
               td
                 input(type="number", step="0.01", name="amount", value="#{entry.raw}")
               td
-                input(type="text", list="accounts", name="account", autocomplete="off", value="#{entry.name}")
+                input(type="text", list="accounts", name="account", autocomplete="off", value="#{entry.name || ''}")
+                datalist(id="accounts")
+                  each account in accounts
+                    option(value="#{account.name}")
               td
-                input(type="text", list="categories", name="category", autocomplete="off", value="#{entry.category}")
+                input(type="text", list="categories", name="category", autocomplete="off", value="#{entry.category || ''}")
+                datalist(id="categories")
+                  each category in categories
+                    option(value="#{category.category}")
               td
                 input(type="text", name="note", value="#{entry.note}")
               td
