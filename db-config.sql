@@ -9,6 +9,7 @@ CREATE TABLE `accounts` (
   `user_id` int(10) unsigned NOT NULL,
   `name` varchar(16) NOT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `user_id_name` (`user_id`,`name`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `accounts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -18,6 +19,9 @@ DROP TABLE IF EXISTS `sessions`;
 CREATE TABLE `sessions` (
   `session_key` char(32) NOT NULL,
   `user_id` int(10) unsigned NOT NULL,
+  `last_accessed` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `description` text NOT NULL,
+  PRIMARY KEY (`session_key`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -49,5 +53,6 @@ CREATE TABLE `users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(16) NOT NULL,
   `password` varchar(64) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
