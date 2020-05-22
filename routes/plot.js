@@ -19,31 +19,39 @@ router.get('/', function(req, res, next)
     let before    = utils.create_clause(req.query.before, `AND datediff(t.date, ${utils.process_date(req.query.before)}) < 0`)
     let after     = utils.create_clause(req.query.after, `AND datediff(t.date, ${utils.process_date(req.query.after)}) > 0`)
 
-    connection.query(`(SELECT date_format(t.date, "%Y-%m-%d") as date, sum(t.amount) as raw, format(sum(t.amount), 2) as amount
-                        FROM transactions as t
-                        INNER JOIN accounts as a ON a.id = t.account_id
-                        WHERE t.user_id = ${user_id} ${account} ${before} ${after}
-                        GROUP BY date)
-                      UNION
-                      (SELECT now() as date, sum(t.amount) as raw, format(sum(t.amount), 2) as amount
-                        FROM transactions as t
-                        INNER JOIN accounts as a ON a.id = t.account_id
-                        WHERE t.user_id = ${user_id} ${account} ${before})
-                      ORDER BY date`, function (error, results, fields)
+    connection.query(`SELECT DISTINCT name FROM accounts
+                      WHERE user_id = ${user_id}`, function (error, accounts, fields)
     {
-      if (error)
+      if (error || accounts.length <= 0)
       {
-        console.log(error)
-        res.render('plot', { error_text: 'Error getting plot data', title: 'Finance | Plot', totals: [], query: req.query })
+        accounts = {}
       }
-      else if (results.length > 0)
+      connection.query(`(SELECT date_format(t.date, "%Y-%m-%d") as date, sum(t.amount) as raw, format(sum(t.amount), 2) as amount
+                          FROM transactions as t
+                          INNER JOIN accounts as a ON a.id = t.account_id
+                          WHERE t.user_id = ${user_id} ${account} ${before} ${after}
+                          GROUP BY date)
+                        UNION
+                        (SELECT now() as date, sum(t.amount) as raw, format(sum(t.amount), 2) as amount
+                          FROM transactions as t
+                          INNER JOIN accounts as a ON a.id = t.account_id
+                          WHERE t.user_id = ${user_id} ${account} ${before})
+                        ORDER BY date`, function (error, results, fields)
       {
-        res.render('plot', { error_text: '', title: 'Finance | Plot', totals: results, query: req.query })
-      }
-      else
-      {
-        res.redirect('/add')
-      }
+        if (error)
+        {
+          console.log(error)
+          res.render('plot', { error_text: 'Error getting plot data', title: 'Finance | Plot', totals: [], query: req.query, accounts: accounts })
+        }
+        else if (results.length > 0)
+        {
+          res.render('plot', { error_text: '', title: 'Finance | Plot', totals: results, query: req.query, accounts: accounts })
+        }
+        else
+        {
+          res.redirect('/add')
+        }
+      })
     })
   })
 })

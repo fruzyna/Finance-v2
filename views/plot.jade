@@ -9,7 +9,10 @@ block content
         td
           span.label Account:
         td
-          input(type="text", value="#{query.account||''}", name="account")
+          input(type="text", list="accounts", name="account", autocomplete="off", value="#{query.account || ''}")
+          datalist(id="accounts")
+            each account in accounts
+              option(value="#{account.name}")
       tr
         td
           span.label After:
