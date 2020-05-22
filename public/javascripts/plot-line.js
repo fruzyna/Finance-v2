@@ -39,7 +39,7 @@ var svg = d3.select("#plot").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
 
 // build axes
 var xScale = d3.scaleBand()
@@ -52,7 +52,7 @@ var yScale = d3.scaleLinear()
 
 var xAxis = d3.axisBottom(xScale)
                 .tickFormat((interval,i) => {
-                    return i%parseInt(dates.length/(width/75)) !== 0 ? " ": interval;
+                    return i%parseInt(dates.length/(width/75)) !== 0 ? " ": interval
                 })
 
 svg.append("g")
@@ -93,8 +93,8 @@ svg.append("g")
 
 // build line
 var line = d3.line()
-    .x(function(d, i) { return xScale(dates[i]); })
-    .y(function(d) { return yScale(d); })
+    .x(function(d, i) { return xScale(dates[i]) })
+    .y(function(d) { return yScale(d) })
     .curve(d3.curveMonotoneX)
 
 svg.append("path")
@@ -110,3 +110,13 @@ svg.selectAll(".dot")
     .attr("cx", function(d, i) { return xScale(dates[i]) })
     .attr("cy", function(d) { return yScale(d) })
     .attr("r", 5)
+    .on("mousemove", function(d, i) {
+        let tt = d3.select("#tooltip")
+            .style("top", `${event.pageY+15}px`)
+            .style("left", `${event.pageX+15}px`)
+        tt.html("")
+        tt.append("span").text(dates[i])
+        tt.append("br")
+        tt.append("span").text(`$${d.toFixed(2)}`)
+    })
+    .on("mouseout", function() { d3.select("#tooltip").html("") })

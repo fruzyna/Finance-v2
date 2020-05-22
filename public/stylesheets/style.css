@@ -77,3 +77,7 @@ thead {
   text-decoration: none;
   color: black;
 }
+
+#tooltip {
+  position: absolute;
+}
