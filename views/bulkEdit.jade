@@ -1,0 +1,32 @@
+extends layout
+
+block content
+  h2 Bulk Edit
+  p.error #{error_text}
+  form(name="edit", method="post")#edit
+    table
+      tr
+        td
+          span.label Type:
+        td
+            select(name="type", id="type", form="edit")
+                option(value="title", selected=query.type == 'title') Title
+                option(value="location", selected=query.type == 'location') Location
+                option(value="date", selected=query.type == 'date') Date
+                option(value="account", selected=query.type == 'account') Account
+                option(value="category", selected=query.type == 'category') Category
+                option(value="note", selected=query.type == 'note') Note
+      tr
+        td
+          span.label Replace:
+        td
+          input(type="text", name="old", value="#{query.old || ''}")
+      tr
+        td
+          span.label With:
+        td
+          input(type="text", name="new", value="#{query.new || ''}")
+      tr
+        td
+        td
+          input(type="submit", value="Edit")
