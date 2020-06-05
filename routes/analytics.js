@@ -34,15 +34,15 @@ router.get('/', function(req, res, next)
         if (error)
         {
             console.log(error)
-            res.render('history', { error_text: 'Error making search', title: 'Finance | Analytics', entries: results, query: req.query })
+            res.render('history', { error_text: 'Error making search', title: 'Finance | Analytics', entries: results, query: req.query, groupby: groupby })
         }
         else if (results.length > 1)
         {
-            res.render('analytics', { error_text: req.query.error_text, title: 'Finance | Analytics', entries: results, query: req.query })
+            res.render('analytics', { error_text: req.query.error_text, title: 'Finance | Analytics', entries: results, query: req.query, groupby: groupby })
         }
         else
         {
-            res.render('history', { error_text: 'No results found', title: 'Finance | Analytics', entries: results, query: req.query })
+            res.render('history', { error_text: 'No results found', title: 'Finance | Analytics', entries: [], query: req.query, groupby: groupby })
         }
     })
   })

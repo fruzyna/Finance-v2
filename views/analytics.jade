@@ -40,7 +40,8 @@ block content
     tbody
       each entry in entries
         tr.row
-            td= entry.name
+            td
+              a(href="/history?#{groupby}=#{entry.name}").textbutton #{entry.name}
             td.number= entry.formatted
             td.number= entry.num
             td.number= entry.mean
