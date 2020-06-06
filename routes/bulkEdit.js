@@ -45,20 +45,24 @@ router.post('/', function(req, res, next)
 {
   utils.session_exists(connection, req, res, function (user_id)
   {
-    let title     = utils.create_clause(req.body.title, 'AND t.title = "$VALUE"')
-    let location  = utils.create_clause(req.body.location, 'AND t.location = "$VALUE"')
+    let title_str       = typeof(req.body.loose_title) !== 'undefined' ? '"%$VALUE%"' : '"$VALUE"'
+    let location_str    = typeof(req.body.loose_location) !== 'undefined' ? '"%$VALUE%"' : '"$VALUE"'
+    let category_str    = typeof(req.body.loose_category) !== 'undefined' ? '"%$VALUE%"' : '"$VALUE"'
+    let note_str        = typeof(req.body.loose_note) !== 'undefined' ? '"%$VALUE%"' : '"$VALUE"'
+    let title     = utils.create_clause(req.body.title, `AND t.title LIKE ${title_str}`)
+    let location  = utils.create_clause(req.body.location, `AND t.location LIKE ${location_str}`)
     let account   = utils.create_clause(req.body.account, 'AND a.name = "$VALUE"')
     let before    = utils.create_clause(req.body.before, `AND datediff(t.date, ${utils.process_date(req.body.before)}) < 0`)
     let after     = utils.create_clause(req.body.after, `AND datediff(t.date, ${utils.process_date(req.body.after)}) > 0`)
-    let category  = utils.create_clause(req.body.category, 'AND t.category = "$VALUE"')
-    let note      = utils.create_clause(req.body.note, 'AND t.note = "$VALUE"')
-    let new_title     = utils.create_clause(req.body.new_title, 't.title = "$VALUE"')
-    let new_location  = utils.create_clause(req.body.new_location, 't.location = "$VALUE"')
-    let new_account   = utils.create_clause(req.body.new_account, `t.account_id = (SELECT id FROM accounts WHERE name = "$VALUE" and user_id = ${user_id})`)
-    let new_before    = utils.create_clause(req.body.new_before, 't.before = "$VALUE"')
-    let new_after     = utils.create_clause(req.body.new_after, 't.after = "$VALUE"')
-    let new_category  = utils.create_clause(req.body.new_category, 't.category = "$VALUE"')
-    let new_note      = utils.create_clause(req.body.new_note, 't.note = "$VALUE"')
+    let category  = utils.create_clause(req.body.category, `AND t.category LIKE ${category_str}`)
+    let note      = utils.create_clause(req.body.note, `AND t.note LIKE ${note_str}`)
+    let new_title       = utils.create_clause(req.body.new_title, 't.title = "$VALUE"')
+    let new_location    = utils.create_clause(req.body.new_location, 't.location = "$VALUE"')
+    let new_account     = utils.create_clause(req.body.new_account, `t.account_id = (SELECT id FROM accounts WHERE name = "$VALUE" and user_id = ${user_id})`)
+    let new_before      = utils.create_clause(req.body.new_before, 't.before = "$VALUE"')
+    let new_after       = utils.create_clause(req.body.new_after, 't.after = "$VALUE"')
+    let new_category    = utils.create_clause(req.body.new_category, 't.category = "$VALUE"')
+    let new_note        = utils.create_clause(req.body.new_note, 't.note = "$VALUE"')
     let set = ''
     let sets = [new_title, new_location, new_account, new_before, new_after, new_category, new_note]
     sets.forEach(function (item, index) {
@@ -71,28 +75,49 @@ router.post('/', function(req, res, next)
             set += item
         }
     })
-
+    
     connection.query(`UPDATE transactions as t, accounts as a SET ${set}
                       WHERE t.user_id = ${user_id} AND a.user_id = ${user_id} ${title} ${location} ${account} ${before} ${after} ${category} ${note}`,
                     function (error, results, fields)
     {
+        let queryStr = ''
+        let queries = {'title': req.body.title, 'location': req.body.location, 'account': req.body.account, 'before': req.body.before, 'after': req.body.after, 'category': req.body.category, 'note': req.body.note}
+        let new_queries = {'title': req.body.new_title, 'location': req.body.new_location, 'account': req.body.new_account, 'before': req.body.new_before, 'after': req.body.new_after, 'category': req.body.new_category, 'note': req.body.new_note}
+        let loose_queries = {'title': req.body.loose_title, 'location': req.body.loose_location, 'category': req.body.loose_category, 'note': req.body.loose_note}
+
         if (error)
         {
             console.log(error)
-            res.redirect('/bulkEdit?error_text=Error making search')
+            Object.keys(queries).forEach(function (key, index) {
+                if (queries[key])
+                {
+                    queryStr += `&${key}=${queries[key]}`
+                }
+            })
+            Object.keys(new_queries).forEach(function (key, index) {
+                if (new_queries[key])
+                {
+                    queryStr += `&new_${key}=${new_queries[key]}`
+                }
+            })
+            Object.keys(loose_queries).forEach(function (key, index) {
+                if (loose_queries[key])
+                {
+                    queryStr += `&loose_${key}=${loose_queries[key]}`
+                }
+            })
+            res.redirect(`/bulkEdit?error_text=Error making search${queryStr}`)
         }
         else
         {
-            let queryStr = '?'
-            let queries = {'title': req.body.title, 'location': req.body.location, 'account': req.body.account, 'before': req.body.before, 'after': req.body.after, 'category': req.body.category, 'note': req.body.note}
-            let new_queries = {'title': req.body.new_title, 'location': req.body.new_location, 'account': req.body.new_account, 'before': req.body.new_before, 'after': req.body.new_after, 'category': req.body.new_category, 'note': req.body.new_note}
+            queryStr = '?'
             Object.keys(queries).forEach(function (key, index) {
                 let query = queries[key]
-                if (new_queries[key] != '')
+                if (new_queries[key])
                 {
                     query = new_queries[key]
                 }
-                if (query != '')
+                if (query)
                 {
                     if (queryStr != '?')
                     {

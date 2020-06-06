@@ -6,16 +6,20 @@ block content
   form(name="edit", method="post")#edit
     table
       tr
-        td
-        td
+        th
+        th
           span.label Find Where...
-        td
+        th
+          span.label Loose 
+        th
           span.label Replace With...
       tr
         td
           span.label Title:
         td
           input(type="text", value="#{query.title||''}", name="title")
+        td
+          input(type="checkbox", name="loose_title", checked=(query.loose_title == 'on' ? 'checked' : undefined))
         td
           input(type="text", value="#{query.new_title||''}", name="new_title")
       tr
@@ -26,6 +30,8 @@ block content
           datalist(id="locations")
             each location in locations
               option(value="#{location.location}")
+        td
+          input(type="checkbox", name="loose_location", checked=(query.loose_location == 'on' ? 'checked' : undefined))
         td
           input(type="text", list="locations", name="new_location", autocomplete="off", value="#{query.new_location || ''}")
           datalist(id="locations")
@@ -40,6 +46,7 @@ block content
             each account in accounts
               option(value="#{account.name}")
         td
+        td
           input(type="text", list="accounts", name="new_account", autocomplete="off", value="#{query.new_account || ''}")
           datalist(id="accounts")
             each account in accounts
@@ -50,12 +57,14 @@ block content
         td
           input(type="text", value="#{query.after||''}", name="after")
         td
+        td
           input(type="text", value="#{query.new_after||''}", name="new_after")
       tr
         td
           span.label Before:
         td
           input(type="text", value="#{query.before||''}", name="before")
+        td
         td
           input(type="text", value="#{query.new_before||''}", name="new_before")
       tr
@@ -67,6 +76,8 @@ block content
             each category in categories
               option(value="#{category.category}")
         td
+          input(type="checkbox", name="loose_category", checked=(query.loose_category == 'on' ? 'checked' : undefined))
+        td
           input(type="text", list="categories", name="new_category", autocomplete="off", value="#{query.new_category || ''}")
           datalist(id="categories")
             each category in categories
@@ -76,6 +87,8 @@ block content
           span.label Note:
         td
           input(type="text", value="#{query.note||''}", name="note")
+        td
+          input(type="checkbox", name="loose_note", checked=(query.loose_note == 'on' ? 'checked' : undefined))
         td
           input(type="text", value="#{query.new_note||''}", name="new_note")
       tr

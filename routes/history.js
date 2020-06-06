@@ -43,14 +43,18 @@ router.get('/', function(req, res, next)
       limit = req.query.limit
     }
 
+    let title_str       = typeof(req.query.exact_title) !== 'undefined' ? '"$VALUE"' : '"%$VALUE%"'
+    let location_str    = typeof(req.query.exact_location) !== 'undefined' ? '"$VALUE"' : '"%$VALUE%"'
+    let category_str    = typeof(req.query.exact_category) !== 'undefined' ? '"$VALUE"' : '"%$VALUE%"'
+    let note_str        = typeof(req.query.exact_note) !== 'undefined' ? '"$VALUE"' : '"%$VALUE%"'
     let id        = utils.create_clause(req.query.id, 'AND (t.id = "$VALUE" OR t.linked_transaction = "$VALUE")')
-    let title     = utils.create_clause(req.query.title, 'AND t.title LIKE "%$VALUE%"')
-    let location  = utils.create_clause(req.query.location, 'AND t.location = "$VALUE"')
+    let title     = utils.create_clause(req.query.title, `AND t.title LIKE ${title_str}`)
+    let location  = utils.create_clause(req.query.location, `AND t.location LIKE ${location_str}`)
     let account   = utils.create_clause(req.query.account, 'AND a.name = "$VALUE"')
     let before    = utils.create_clause(req.query.before, `AND datediff(t.date, ${utils.process_date(req.query.before)}) < 0`)
     let after     = utils.create_clause(req.query.after, `AND datediff(t.date, ${utils.process_date(req.query.after)}) > 0`)
-    let category  = utils.create_clause(req.query.category, 'AND t.category = "$VALUE"')
-    let note      = utils.create_clause(req.query.note, 'AND t.note = "$VALUE"')
+    let category  = utils.create_clause(req.query.category, `AND t.category LIKE ${category_str}`)
+    let note      = utils.create_clause(req.query.note, `AND t.note LIKE ${note_str}`)
 
     connection.query(`SELECT DISTINCT location FROM transactions
                       WHERE user_id = ${user_id}`, function (error, locations, fields)

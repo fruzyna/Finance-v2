@@ -6,15 +6,24 @@ block content
   form(name="search", method="get")#left
     table
       tr
+        th
+        th
+          span.label Filter
+        th
+          span.label Exact
+      tr
         td
           span.label Limit:
         td
           input(type="number", value="#{query.limit||10}", name="limit")
+        td
       tr
         td
           span.label Title:
         td
           input(type="text", value="#{query.title||''}", name="title")
+        td
+          input(type="checkbox", name="exact_title", checked=(query.exact_title == 'on' ? 'checked' : undefined))
       tr
         td
           span.label Location:
@@ -23,6 +32,8 @@ block content
           datalist(id="locations")
             each location in locations
               option(value="#{location.location}")
+        td
+          input(type="checkbox", name="exact_location", checked=(query.exact_location == 'on' ? 'checked' : undefined))
       tr
         td
           span.label Account:
@@ -36,11 +47,13 @@ block content
           span.label After:
         td
           input(type="text", value="#{query.after||''}", name="after")
+        td
       tr
         td
           span.label Before:
         td
           input(type="text", value="#{query.before||''}", name="before")
+        td
       tr
         td
           span.label Category:
@@ -49,11 +62,15 @@ block content
           datalist(id="categories")
             each category in categories
               option(value="#{category.category}")
+        td
+          input(type="checkbox", name="exact_category", checked=(query.exact_category == 'on' ? 'checked' : undefined))
       tr
         td
           span.label Note:
         td
           input(type="text", value="#{query.note||''}", name="note")
+        td
+          input(type="checkbox", name="exact_note", checked=(query.exact_note == 'on' ? 'checked' : undefined))
       tr
         td
         td
