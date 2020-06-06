@@ -7,25 +7,77 @@ block content
     table
       tr
         td
-          span.label Type:
         td
-            select(name="type", id="type", form="edit")
-                option(value="title", selected=query.type == 'title') Title
-                option(value="location", selected=query.type == 'location') Location
-                option(value="date", selected=query.type == 'date') Date
-                option(value="account", selected=query.type == 'account') Account
-                option(value="category", selected=query.type == 'category') Category
-                option(value="note", selected=query.type == 'note') Note
+          span.label Find Where...
+        td
+          span.label Replace With...
       tr
         td
-          span.label Replace:
+          span.label Title:
         td
-          input(type="text", name="old", value="#{query.old || ''}")
+          input(type="text", value="#{query.title||''}", name="title")
+        td
+          input(type="text", value="#{query.new_title||''}", name="new_title")
       tr
         td
-          span.label With:
+          span.label Location:
         td
-          input(type="text", name="new", value="#{query.new || ''}")
+          input(type="text", list="locations", name="location", autocomplete="off", value="#{query.location || ''}")
+          datalist(id="locations")
+            each location in locations
+              option(value="#{location.location}")
+        td
+          input(type="text", list="locations", name="new_location", autocomplete="off", value="#{query.new_location || ''}")
+          datalist(id="locations")
+            each location in locations
+              option(value="#{location.location}")
+      tr
+        td
+          span.label Account:
+        td
+          input(type="text", list="accounts", name="account", autocomplete="off", value="#{query.account || ''}")
+          datalist(id="accounts")
+            each account in accounts
+              option(value="#{account.name}")
+        td
+          input(type="text", list="accounts", name="new_account", autocomplete="off", value="#{query.new_account || ''}")
+          datalist(id="accounts")
+            each account in accounts
+              option(value="#{account.name}")
+      tr
+        td
+          span.label After:
+        td
+          input(type="text", value="#{query.after||''}", name="after")
+        td
+          input(type="text", value="#{query.new_after||''}", name="new_after")
+      tr
+        td
+          span.label Before:
+        td
+          input(type="text", value="#{query.before||''}", name="before")
+        td
+          input(type="text", value="#{query.new_before||''}", name="new_before")
+      tr
+        td
+          span.label Category:
+        td
+          input(type="text", list="categories", name="category", autocomplete="off", value="#{query.category || ''}")
+          datalist(id="categories")
+            each category in categories
+              option(value="#{category.category}")
+        td
+          input(type="text", list="categories", name="new_category", autocomplete="off", value="#{query.new_category || ''}")
+          datalist(id="categories")
+            each category in categories
+              option(value="#{category.category}")
+      tr
+        td
+          span.label Note:
+        td
+          input(type="text", value="#{query.note||''}", name="note")
+        td
+          input(type="text", value="#{query.new_note||''}", name="new_note")
       tr
         td
         td
