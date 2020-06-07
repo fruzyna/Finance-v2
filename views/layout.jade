@@ -5,13 +5,15 @@ html
     link(rel='stylesheet', href='/stylesheets/style.css')
     script(src="https://d3js.org/d3.v5.min.js")
   body
-    h1 Finance
-    a(href="/").link Home
-    a(href="/accounts").link Accounts
-    a(href="/add").link Add Transaction
-    a(href="/history").link History
-    a(href="/plot").link Plot
-    a(href="/analytics").link Analytics
-    a(href="/bulkEdit").link Bulk Edit
-    a(href="/settings").link Settings
-    block content
+    table#header
+      tr
+        td(onclick="document.location='/'")#title Finance
+        td(onclick="document.location='/accounts'").link Accounts
+        td(onclick="document.location='/add'").link Add Transaction
+        td(onclick="document.location='/history'").link History
+        td(onclick="document.location='/plot'").link Plot
+        td(onclick="document.location='/analytics'").link Analytics
+        td(onclick="document.location='/bulkEdit'").link Bulk Edit
+        td(onclick="document.location='/settings'").link Settings
+    div#content
+      block content

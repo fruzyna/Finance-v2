@@ -1,5 +1,5 @@
 body {
-  padding: 50px;
+  margin: 0;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
@@ -23,12 +23,41 @@ thead {
   float: right;
 }
 
+#header {
+  width: 100%;
+  background-color: dodgerblue;
+  height: 48px;
+  line-height: 1;
+}
+
+#title {
+  display: inline-block;
+  font-size: 32px;
+  color: white;
+  margin: 12px;
+  margin-bottom: 5px;
+  user-select: none;
+}
+
 .link {
+  display: inline;
+  font-size: 16px;
   padding: 5px;
-  margin-right: 5px;
-  text-decoration: none;
+  padding-top: 22px;
+  padding-bottom: 16px;
+  margin-right: 8px;
+  border: none;
   color: white;
   background-color: #00B7FF;
+  user-select: none;
+}
+
+.link:hover {
+  background-color: dodgerblue;
+}
+
+#content {
+  margin: 16px;
 }
 
 #left {

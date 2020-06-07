@@ -33,7 +33,7 @@ router.get('/', function(req, res, next)
         {
           edit = req.query.edit
         }
-        res.render('balances', { title: 'Finance | Accounts', accounts: results, edit:edit, error_text: req.query.error_text })
+        res.render('accounts', { title: 'Finance | Accounts', accounts: results, edit:edit, error_text: req.query.error_text })
       }
       else
       {
