@@ -16,6 +16,10 @@ thead {
 }
 
 .number {
+  text-align: right;
+}
+
+.number.textbutton {
   float: right;
 }
 
