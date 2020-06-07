@@ -16,7 +16,7 @@ thead {
 }
 
 .number {
-  text-align: right;
+  float: right;
 }
 
 .link {

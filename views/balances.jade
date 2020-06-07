@@ -23,7 +23,8 @@ block content
           else
             td
               a(href="/accounts?edit=#{account.name}").textbutton= account.name
-            td.number= account.balance
+            td
+              a(href="/history?account=#{account.name}").number.textbutton= account.balance
       tr
         form(name="add-account", action="/accounts/add" method="post")
           td
