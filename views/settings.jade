@@ -77,6 +77,13 @@ block content
         form(name="export", action="/settings/export")
           input(type="submit", value="Export")
       td
+        h3 Import Transactions
+        p This will replace all transactions with a given previous export.
+        form(name="import", enctype="multipart/form-data", action="/settings/import", method="post")
+          input(type="file", name="upload")
+          input(type="submit", value="Import")
+    tr
+      td
         h3 Delete Account
         p This will delete all data related to your account. It will be lost forever.
         form(name="delete", action="javascript:deleteAccount()")
