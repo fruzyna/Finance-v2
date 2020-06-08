@@ -198,142 +198,139 @@ router.post('/import', function(req, res, next)
           if (err)
           {
             console.log(err)
-            error = 'Failed to read file'
+            res.redirect(`/settings?error_text=Failed to read file`)
           }
-
-          // remove all accounts and transactions
-          connection.query(`DELETE FROM transactions
-                            WHERE user_id = ${user_id}`, function (err, results, fields)
+          else if (!data.startsWith('id,title,location,date,amount,account,category,note,linked_transaction'))
           {
-            if (err)
+            console.log(data)
+            res.redirect(`/settings?error_text=Invalid file uploaded`)
+          }
+          else
+          {
+            // remove all accounts and transactions
+            connection.query(`DELETE FROM transactions
+                              WHERE user_id = ${user_id}`, function (err, results, fields)
             {
-              console.log(err)
-              error = 'Error deleting existing transactions'
-            }
-            else
-            {
-              connection.query(`DELETE FROM accounts
-                                WHERE user_id = ${user_id}`, function (err, results, fields)
+              if (err)
               {
-                if (err)
+                console.log(err)
+                res.redirect(`/settings?error_text=Error deleting existing transactions`)
+              }
+              else
+              {
+                connection.query(`DELETE FROM accounts
+                                  WHERE user_id = ${user_id}`, function (err, results, fields)
                 {
-                  console.log(err)
-                  error = 'Error deleting existing accounts'
-                }
-                else
-                {
-                  let accounts = []
-                  let account_ids = {}
-                  let transactions = {}
-                  data.split('\n').forEach(function (line, index)
+                  if (err)
                   {
-                    if (index != 0 && line.includes(','))
-                    {
-                      // parse row
-                      let cells = line.split(',')
-                      let account = cells[5]
-                      transactions[cells[0]] = {
-                        'title': cells[1],
-                        'location': cells[2],
-                        'date': cells[3],
-                        'amount': cells[4],
-                        'account': account,
-                        'category': cells[6],
-                        'note': cells[7],
-                        'linked_transaction': cells[8]
-                      }
-                      
-                      // add account if it is new
-                      if (!accounts.includes(account))
-                      {
-                        accounts.push(account)
-                      }
-                    }
-                  })
-
-                  accounts.forEach(function (account, index)
+                    console.log(err)
+                    res.redirect(`/settings?error_text=Error deleting existing accounts`)
+                  }
+                  else
                   {
-                    connection.query(`INSERT INTO accounts (user_id, name)
-                                      VALUES (${user_id}, "${account}")`, function (err, results, fields)
+                    let accounts = []
+                    let account_ids = {}
+                    let transactions = {}
+                    data.split('\n').forEach(function (line, index)
                     {
-                      if (err)
+                      if (index != 0 && line.includes(','))
                       {
-                        console.log(err)
-                        error = 'Error adding account'
-                      }
-                      else
-                      {
-                        account_ids[account] = results.insertId
-                        if (Object.keys(account_ids).length == accounts.length)
+                        // parse row
+                        let cells = line.split(',')
+                        let account = cells[5]
+                        transactions[cells[0]] = {
+                          'title': cells[1],
+                          'location': cells[2],
+                          'date': cells[3],
+                          'amount': cells[4],
+                          'account': account,
+                          'category': cells[6],
+                          'note': cells[7],
+                          'linked_transaction': cells[8]
+                        }
+                        
+                        // add account if it is new
+                        if (!accounts.includes(account))
                         {
-                          // add each transaction
-                          let id_map = {}
-                          Object.keys(transactions).forEach(function (id, index)
-                          {
-                            let t = transactions[id]
-                            connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, category, note)
-                                              VALUES (${user_id}, (SELECT id FROM accounts WHERE user_id = ${user_id} and name = "${t.account}"), 
-                                                "${t.date}", "${t.title}", "${t.location}", "${t.amount}", "${t.category}", "${t.note}")`, function (err, results, fields)
-                            {
-                              if (err)
-                              {
-                                console.log(err)
-                                error = 'Error adding transaction'
-                              }
-                              else
-                              {
-                                id_map[id] = results.insertId
-                                if (Object.keys(id_map).length == Object.keys(transactions).length)
-                                {
-                                  Object.keys(transactions).forEach(function (id, index)
-                                  {
-                                    let lt = transactions[id].linked_transaction
-                                    if (lt && lt != 'null' && Object.keys(id_map).includes(id) && Object.keys(id_map).includes(lt))
-                                    {
-                                      connection.query(`UPDATE transactions SET linked_transaction = ${id_map[lt]} WHERE id = ${id_map[id]}`, function (err, results, fields)
-                                      {
-                                        if (err)
-                                        {
-                                          console.log(err)
-                                          error = 'Error linking transactions'
-                                        }
-                                      })
-                                    }
-                                  })
-                                }
-                              }
-                            })
-                          })
+                          accounts.push(account)
                         }
                       }
                     })
-                  })
-                }
-              })
-            }
-          })
+
+                    accounts.forEach(function (account, index)
+                    {
+                      connection.query(`INSERT INTO accounts (user_id, name)
+                                        VALUES (${user_id}, "${account}")`, function (err, results, fields)
+                      {
+                        if (err)
+                        {
+                          console.log(err)
+                          error = 'Error adding account'
+                        }
+                        else
+                        {
+                          account_ids[account] = results.insertId
+                          if (Object.keys(account_ids).length == accounts.length)
+                          {
+                            // add each transaction
+                            let id_map = {}
+                            Object.keys(transactions).forEach(function (id, index)
+                            {
+                              let t = transactions[id]
+                              connection.query(`INSERT INTO transactions (user_id, account_id, date, title, location, amount, category, note)
+                                                VALUES (${user_id}, (SELECT id FROM accounts WHERE user_id = ${user_id} and name = "${t.account}"), 
+                                                  "${t.date}", "${t.title}", "${t.location}", "${t.amount}", "${t.category}", "${t.note}")`, function (err, results, fields)
+                              {
+                                if (err)
+                                {
+                                  console.log(err)
+                                  error = 'Error adding transaction'
+                                }
+                                else
+                                {
+                                  id_map[id] = results.insertId
+                                  if (Object.keys(id_map).length == Object.keys(transactions).length)
+                                  {
+                                    Object.keys(transactions).forEach(function (id, index)
+                                    {
+                                      let lt = transactions[id].linked_transaction
+                                      if (lt && lt != 'null' && Object.keys(id_map).includes(id) && Object.keys(id_map).includes(lt))
+                                      {
+                                        connection.query(`UPDATE transactions SET linked_transaction = ${id_map[lt]} WHERE id = ${id_map[id]}`, function (err, results, fields)
+                                        {
+                                          if (err)
+                                          {
+                                            console.log(err)
+                                            error = 'Error linking transactions'
+                                          }
+                                        })
+                                      }
+                                    })
+                                  }
+                                }
+                              })
+                            })
+                          }
+                        }
+                      })
+                    })
+                    res.redirect(`/history?error_text=${error}`)
+                  }
+                })
+              }
+            })
+          }
         })
       })
       .on('aborted', function ()
       {
         console.error('Request aborted by the user')
-        error = 'Upload aborted'
+        res.redirect(`/settings?error_text=Upload aborted`)
       })
       .on('error', function (err)
       {
         console.log(err)
-        error = 'Failed to upload file'
-      })
-      .on('end', function ()
-      {
-        if (error == '')
-        {
-          res.redirect(`/history?error_text=${error}`)
-        }
-        else
-        {
-          res.redirect(`/settings?error_text=${error}`)
-        }
+        res.redirect(`/settings?error_text=Failed to upload file`)
       })
   })
 })
