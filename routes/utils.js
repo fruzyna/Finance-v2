@@ -21,7 +21,7 @@ function process_date(date)
     return sanitize(date)
 }
 
-// generate a new session key
+// generate a new 32 character session key
 function generate_key()
 {
     let str = ''
@@ -81,6 +81,7 @@ function create_clause(value, format)
     }
 }
 
+// verify passwords match and are at least 8 characters
 function validate_password(password, verify)
 {
     if (password != verify)
@@ -94,6 +95,7 @@ function validate_password(password, verify)
     return 'valid'
 }
 
+// verify username only contains alphanumerics
 function validate_username(username)
 {
     if (!username.match(/^[0-9a-z]+$/))
@@ -102,14 +104,17 @@ function validate_username(username)
     }
     return 'valid'
 }
-        
+
+// quote remove dangerous characters from string before use in SQL
 function sanitize(value)
 {
     value = value.toString().replace(/\\/g, '\\\\')
                             .replace(/"/g, '\\"')
+                            .replace(/,/g, ';')
     return `"${value}"`
 }
 
+// make functions importable
 module.exports = {
     process_date,
     generate_key,
