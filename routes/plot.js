@@ -32,7 +32,7 @@ router.get('/', function(req, res, next)
                           WHERE t.user_id = ${user_id} ${account} ${before} ${after}
                           GROUP BY date)
                         UNION
-                        (SELECT now() as date, sum(t.amount) as raw, format(sum(t.amount), 2) as amount
+                        (SELECT max(date) as date, sum(t.amount) as raw, format(sum(t.amount), 2) as amount
                           FROM transactions as t
                           INNER JOIN accounts as a ON a.id = t.account_id
                           WHERE t.user_id = ${user_id} ${account} ${before})

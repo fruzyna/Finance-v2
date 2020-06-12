@@ -17,13 +17,13 @@ router.get('/', function(req, res, next)
   {
     connection.query(`(SELECT date_format(date, "%Y-%m-%d") as date, sum(amount) as raw, format(sum(amount), 2) as amount, "" as name
                         FROM transactions
-                        WHERE user_id = ${user_id} and date >= SUBDATE(now(), 31)
+                        WHERE user_id = ${user_id} and date >= SUBDATE(now(), 31) and date < now()
                         GROUP BY date)
                       UNION
                       (SELECT now() as date, sum(t.amount) as raw, format(sum(t.amount), 2) as amount, u.username as name
                         FROM transactions as t
                         INNER JOIN users as u ON u.id = ${user_id}
-                        WHERE t.user_id = ${user_id})
+                        WHERE t.user_id = ${user_id} and t.date < now())
                       ORDER BY date`, function (error, results, fields)
     {
       if (error)
