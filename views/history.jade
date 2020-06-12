@@ -132,6 +132,6 @@ block content
             td
               a(href="/history?id=#{entry.linked_transaction}")= entry.linked_transaction
             td
-              a(href="/history#{url}&edit=#{entry.id}")= entry.edtext
+              a(href="/history#{url.replace(/edit/g, 'editt')}#{url.includes('?') ? '&' : '?'}edit=#{entry.id}")= entry.edtext
             td
               a(href="/history/delete?id=#{entry.id}")= entry.deltext
