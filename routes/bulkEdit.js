@@ -54,17 +54,17 @@ router.post('/', function(req, res, next)
     let account   = utils.create_clause(req.body.account, 'AND a.name = "$VALUE"')
     let before    = utils.create_clause(req.body.before, `AND datediff(t.date, ${utils.process_date(req.body.before)}) < 0`)
     let after     = utils.create_clause(req.body.after, `AND datediff(t.date, ${utils.process_date(req.body.after)}) > 0`)
+    let date      = utils.create_clause(req.body.date, `AND datediff(t.date, ${utils.process_date(req.body.date)}) = 0`)
     let category  = utils.create_clause(req.body.category, `AND t.category LIKE ${category_str}`)
     let note      = utils.create_clause(req.body.note, `AND t.note LIKE ${note_str}`)
     let new_title       = utils.create_clause(req.body.new_title, 't.title = "$VALUE"')
     let new_location    = utils.create_clause(req.body.new_location, 't.location = "$VALUE"')
     let new_account     = utils.create_clause(req.body.new_account, `t.account_id = (SELECT id FROM accounts WHERE name = "$VALUE" and user_id = ${user_id})`)
-    let new_before      = utils.create_clause(req.body.new_before, 't.before = "$VALUE"')
-    let new_after       = utils.create_clause(req.body.new_after, 't.after = "$VALUE"')
+    let new_date        = utils.create_clause(req.body.new_date, 't.date = "$VALUE"')
     let new_category    = utils.create_clause(req.body.new_category, 't.category = "$VALUE"')
     let new_note        = utils.create_clause(req.body.new_note, 't.note = "$VALUE"')
     let set = ''
-    let sets = [new_title, new_location, new_account, new_before, new_after, new_category, new_note]
+    let sets = [new_title, new_location, new_account, new_date, new_category, new_note]
     sets.forEach(function (item, index) {
         if (item != '')
         {
@@ -77,12 +77,12 @@ router.post('/', function(req, res, next)
     })
     
     connection.query(`UPDATE transactions as t, accounts as a SET ${set}
-                      WHERE t.user_id = ${user_id} AND a.user_id = ${user_id} ${title} ${location} ${account} ${before} ${after} ${category} ${note}`,
+                      WHERE t.user_id = ${user_id} AND a.user_id = ${user_id} ${title} ${location} ${account} ${before} ${date} ${after} ${category} ${note}`,
                     function (error, results, fields)
     {
         let queryStr = ''
-        let queries = {'title': req.body.title, 'location': req.body.location, 'account': req.body.account, 'before': req.body.before, 'after': req.body.after, 'category': req.body.category, 'note': req.body.note}
-        let new_queries = {'title': req.body.new_title, 'location': req.body.new_location, 'account': req.body.new_account, 'before': req.body.new_before, 'after': req.body.new_after, 'category': req.body.new_category, 'note': req.body.new_note}
+        let queries = {'title': req.body.title, 'location': req.body.location, 'account': req.body.account, 'before': req.body.before, 'after': req.body.after, 'date': req.body.date, 'category': req.body.category, 'note': req.body.note}
+        let new_queries = {'title': req.body.new_title, 'location': req.body.new_location, 'account': req.body.new_account, 'date': req.body.new_date, 'category': req.body.new_category, 'note': req.body.new_note}
         let loose_queries = {'title': req.body.loose_title, 'location': req.body.loose_location, 'category': req.body.loose_category, 'note': req.body.loose_note}
 
         if (error)

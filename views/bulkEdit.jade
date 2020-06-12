@@ -58,7 +58,6 @@ block content
           input(type="text", value="#{query.after||''}", name="after")
         td
         td
-          input(type="text", value="#{query.new_after||''}", name="new_after")
       tr
         td
           span.label Before:
@@ -66,7 +65,14 @@ block content
           input(type="text", value="#{query.before||''}", name="before")
         td
         td
-          input(type="text", value="#{query.new_before||''}", name="new_before")
+      tr
+        td
+          span.label Date:
+        td
+          input(type="text", value="#{query.date||''}", name="date")
+        td
+        td
+          input(type="text", value="#{query.new_date||''}", name="new_date")
       tr
         td
           span.label Category:
