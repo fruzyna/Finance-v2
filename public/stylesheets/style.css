@@ -35,7 +35,6 @@ thead {
   font-size: 32px;
   color: white;
   margin: 12px;
-  margin-bottom: 5px;
   user-select: none;
 }
 
@@ -44,7 +43,7 @@ thead {
   font-size: 16px;
   padding: 5px;
   padding-top: 22px;
-  padding-bottom: 16px;
+  padding-bottom: 22px;
   margin-right: 8px;
   border: none;
   color: white;
