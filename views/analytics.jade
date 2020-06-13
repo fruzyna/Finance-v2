@@ -9,24 +9,24 @@ block content
         td
           span.label After:
         td
-          input(type="text", value="#{query.after||''}", name="after")
+          input(type="text", value="#{query.after||''}", name="after").textbox
       tr
         td
           span.label Before:
         td
-          input(type="text", value="#{query.before||''}", name="before")
+          input(type="text", value="#{query.before||''}", name="before").textbox
       tr
         td
           span.label Grouping:
         td
-            select(name="groupby", id="groupby", form="left")
-                option(value="category", selected=query.groupby == 'category') Category
-                option(value="location", selected=query.groupby == 'location') Location
+            select(name="groupby", id="groupby", form="left").textbox
+              option(value="category", selected=query.groupby == 'category') Category
+              option(value="location", selected=query.groupby == 'location') Location
       tr
         td
           span.label Min Entrys:
         td
-          input(type="number", value="#{query.min||''}", name="min")
+          input(type="number", value="#{query.min||''}", name="min").textbox
       tr
         td
         td

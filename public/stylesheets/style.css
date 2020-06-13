@@ -113,3 +113,34 @@ thead {
 #tooltip {
   position: absolute;
 }
+
+input.textbox {
+  padding: 8px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: lightgray;
+  border-radius: 4px;
+}
+
+input[type=submit] {
+  background-color: whitesmoke;
+  min-width: 100px;
+  padding: 8px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: lightgray;
+  border-radius: 4px;
+}
+
+input[type=submit]:active {
+  background-color: lightgray;
+}
+
+select {
+  background-color: whitesmoke;
+  padding: 8px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: lightgray;
+  border-radius: 4px;
+}

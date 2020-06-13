@@ -14,7 +14,7 @@ block content
             form(name="search", action="/accounts/rename" method="post")
               input(type="text", name="oldname", value="#{account.name}").hidden
               td
-                input(type="text", name="newname", value="#{account.name}")
+                input(type="text", name="newname", value="#{account.name}").textbox
               td.number= account.balance
               td
                 input(type="submit", name="save", value="Save")
@@ -28,7 +28,7 @@ block content
       tr
         form(name="add-account", action="/accounts/add" method="post")
           td
-            input(type="text", name="name")
+            input(type="text", name="name").textbox
           td
             input(type="submit", value="Add Account")
   div#plot

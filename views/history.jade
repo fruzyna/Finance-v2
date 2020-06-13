@@ -15,20 +15,20 @@ block content
         td
           span.label Limit:
         td
-          input(type="number", value="#{query.limit||10}", name="limit")
+          input(type="number", value="#{query.limit||10}", name="limit").textbox
         td
       tr
         td
           span.label Title:
         td
-          input(type="text", value="#{query.title||''}", name="title")
+          input(type="text", value="#{query.title||''}", name="title").textbox
         td
           input(type="checkbox", name="exact_title", checked=(query.exact_title == 'on' ? 'checked' : undefined))
       tr
         td
           span.label Location:
         td
-          input(type="text", list="locations", name="location", autocomplete="off", value="#{query.location || ''}")
+          input(type="text", list="locations", name="location", autocomplete="off", value="#{query.location || ''}").textbox
           datalist(id="locations")
             each location in locations
               option(value="#{location.location}")
@@ -38,7 +38,7 @@ block content
         td
           span.label Account:
         td
-          input(type="text", list="accounts", name="account", autocomplete="off", value="#{query.account || ''}")
+          input(type="text", list="accounts", name="account", autocomplete="off", value="#{query.account || ''}").textbox
           datalist(id="accounts")
             each account in accounts
               option(value="#{account.name}")
@@ -46,19 +46,19 @@ block content
         td
           span.label After:
         td
-          input(type="text", value="#{query.after||''}", name="after")
+          input(type="text", value="#{query.after||''}", name="after").textbox
         td
       tr
         td
           span.label Before:
         td
-          input(type="text", value="#{query.before||''}", name="before")
+          input(type="text", value="#{query.before||''}", name="before").textbox
         td
       tr
         td
           span.label Category:
         td
-          input(type="text", list="categories", name="category", autocomplete="off", value="#{query.category || ''}")
+          input(type="text", list="categories", name="category", autocomplete="off", value="#{query.category || ''}").textbox
           datalist(id="categories")
             each category in categories
               option(value="#{category.category}")
@@ -68,7 +68,7 @@ block content
         td
           span.label Note:
         td
-          input(type="text", value="#{query.note||''}", name="note")
+          input(type="text", value="#{query.note||''}", name="note").textbox
         td
           input(type="checkbox", name="exact_note", checked=(query.exact_note == 'on' ? 'checked' : undefined))
       tr
@@ -93,28 +93,28 @@ block content
           if entry.id == query.edit
             form(name="search", method="post")
               td
-                input(type="text", name="title", value="#{entry.title}")
+                input(type="text", name="title", value="#{entry.title}").textbox
               td
-                input(type="text", list="locations", name="location", autocomplete="off", value="#{entry.location || ''}")
+                input(type="text", list="locations", name="location", autocomplete="off", value="#{entry.location || ''}").textbox
                 datalist(id="locations")
                   each location in locations
                     option(value="#{location.location}")
               td
-                input(type="text", name="date", value="#{entry.date}")
+                input(type="text", name="date", value="#{entry.date}").textbox
               td
-                input(type="number", step="0.01", name="amount", value="#{entry.raw}")
+                input(type="number", step="0.01", name="amount", value="#{entry.raw}").textbox
               td
-                input(type="text", list="accounts", name="account", autocomplete="off", value="#{entry.name || ''}")
+                input(type="text", list="accounts", name="account", autocomplete="off", value="#{entry.name || ''}").textbox
                 datalist(id="accounts")
                   each account in accounts
                     option(value="#{account.name}")
               td
-                input(type="text", list="categories", name="category", autocomplete="off", value="#{entry.category || ''}")
+                input(type="text", list="categories", name="category", autocomplete="off", value="#{entry.category || ''}").textbox
                 datalist(id="categories")
                   each category in categories
                     option(value="#{category.category}")
               td
-                input(type="text", name="note", value="#{entry.note}")
+                input(type="text", name="note", value="#{entry.note}").textbox
               td
                 a(href="/history?id=#{entry.linked_transaction}")= entry.linked_transaction
               td
