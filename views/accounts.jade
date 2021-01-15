@@ -19,7 +19,7 @@ block content
               td
                 input(type="submit", name="save", value="Save")
             td
-              a(href="/accounts/delete?name=#{account.name}") Delete
+              a(href="/accounts/delete?name=#{account.name}", onclick="return confirm('Are you sure you want to delete #{account.name}?')") Delete
           else
             td
               a(href="/accounts?edit=#{account.name}").textbutton= account.name
