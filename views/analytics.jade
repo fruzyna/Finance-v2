@@ -41,7 +41,7 @@ block content
       each entry in entries
         tr.row
             td
-              a(href="/history?#{groupby}=#{entry.name}").textbutton #{entry.name}
+              a(href="/history?#{groupby}=#{entry.name}&exact_category=on").textbutton #{entry.name}
             td.number= entry.formatted
             td.number= entry.num
             td.number= entry.mean
