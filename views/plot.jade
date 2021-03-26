@@ -33,6 +33,11 @@ block content
           input(type="text", value="#{query.before||''}", name="before").textbox
       tr
         td
+          span.label Invert:
+        td
+          input(type="checkbox", name="invert", checked=(query.invert == 'on' ? 'checked' : undefined))
+      tr
+        td
         td
           input(type="submit", value="Plot")
   div#plot

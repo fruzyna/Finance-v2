@@ -15,6 +15,7 @@ router.get('/', function(req, res, next)
 {
   utils.session_exists(connection, req, res, function (user_id)
   {
+    let invert    = typeof(req.query.invert) !== 'undefined' ? '-' : ''
     let account   = utils.create_clause(req.query.account, 'AND a.name = "$VALUE"')
     let category  = utils.create_clause(req.query.category, 'AND t.category = "$VALUE"')
     let before    = utils.create_clause(req.query.before, `AND datediff(t.date, ${utils.process_date(req.query.before)}) < 0`)
@@ -36,7 +37,7 @@ router.get('/', function(req, res, next)
         {
           categories = {}
         }
-        connection.query(`(SELECT date_format(t.date, "%Y-%m-%d") as date, sum(t.amount) as raw, format(sum(t.amount), 2) as amount
+        connection.query(`(SELECT date_format(t.date, "%Y-%m-%d") as date, ${invert}sum(t.amount) as raw, format(sum(t.amount), 2) as amount
                             FROM transactions as t
                             INNER JOIN accounts as a ON a.id = t.account_id
                             WHERE t.user_id = ${user_id} ${account} ${before} ${after} ${category}
