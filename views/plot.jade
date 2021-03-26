@@ -15,6 +15,14 @@ block content
               option(value="#{account.name}")
       tr
         td
+          span.label Category:
+        td
+          input(type="text", list="categories", name="category", autocomplete="off", value="#{query.category || ''}").textbox
+          datalist(id="categories")
+            each category in categories
+              option(value="#{category.name}")
+      tr
+        td
           span.label After:
         td
           input(type="text", value="#{query.after||''}", name="after").textbox
