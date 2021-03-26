@@ -79,7 +79,7 @@ svg.append("g")
         .attr("x", (1/2) * width)
         .attr("dy", "0.71em")
         .attr("text-anchor", "middle")
-        .text("Days Back")
+        .text("Date")
 
 svg.append("g")
     .append("text")
