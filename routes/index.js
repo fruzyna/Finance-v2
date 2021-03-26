@@ -15,6 +15,7 @@ router.get('/', function(req, res, next)
 {
   utils.session_exists(connection, req, res, function (user_id)
   {
+    utils.purgeExpiredSessions(connection, user_id)
     connection.query(`(SELECT date_format(date, "%Y-%m-%d") as date, sum(amount) as raw, format(sum(amount), 2) as amount, "" as name
                         FROM transactions
                         WHERE user_id = ${user_id} and date >= SUBDATE(now(), 31) and date < now()

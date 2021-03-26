@@ -38,7 +38,7 @@ router.post('/', function(req, res, next)
         }
         else
         {
-          res.cookie('session', key, { maxAge: 2592000000})
+          res.cookie('session', key, { maxAge: 2678400 }) // 31 days 
           res.redirect('/')
         }
       })
@@ -98,7 +98,7 @@ router.post('/create', function(req, res, next)
               }
               else
               {
-                res.cookie('session', key, { maxAge: 2592000000})
+                res.cookie('session', key, { maxAge: 2678400 }) // 31 days 
                 res.redirect('/')
               }
             })

@@ -51,6 +51,15 @@ router.get('/rmsession', function(req, res, next)
   })
 })
 
+router.get('/purgesessions', function(req, res, next)
+{
+  utils.session_exists(connection, req, res, function (user_id)
+  {
+    utils.purgeExpiredSessions(connection, user_id)
+    res.redirect('/settings')
+  })
+})
+
 router.post('/chusername', function(req, res, next)
 {
   utils.session_exists(connection, req, res, function (user_id)

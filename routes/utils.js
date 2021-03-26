@@ -114,6 +114,20 @@ function sanitize(value)
     return `"${value}"`
 }
 
+// remove any expired sessions (> 31 days)
+function purgeExpiredSessions(connection, user_id)
+{
+    connection.query(`DELETE FROM sessions
+                      WHERE TIME_TO_SEC(TIMEDIFF(NOW(), last_accessed)) > 2678400
+                          and user_id = ${user_id}`, function (error, results, fields)
+    {
+        if (error)
+        {
+            console.log(error)
+        }
+    })
+}
+
 // make functions importable
 module.exports = {
     process_date,
@@ -122,5 +136,6 @@ module.exports = {
     sanitize,
     create_clause,
     validate_password,
-    validate_username
+    validate_username,
+    purgeExpiredSessions
 }

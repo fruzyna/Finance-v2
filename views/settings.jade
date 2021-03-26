@@ -52,8 +52,11 @@ block content
     tr
       td(colspan="2")
         h3 Sessions
-        form(name="logout", action="/settings/logout")
+        form(name="logout", action="/settings/logout" style="display: inline")
           input(type="submit", value="Logout")
+        span 
+        form(name="purge", action="/settings/purgesessions" style="display: inline")
+          input(type="submit", value="Purge Expired Sessions")
         br
         table(cellpadding="5px")
           thead
