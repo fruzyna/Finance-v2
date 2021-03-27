@@ -34,8 +34,9 @@ router.get('/rmsession', function(req, res, next)
 {
   utils.session_exists(connection, req, res, function (user_id)
   {
+    let key = utils.sanitize(req.query.key)
     connection.query(`DELETE FROM sessions
-                      WHERE right(session_key, 4) = "${req.query.key}"
+                      WHERE right(session_key, 4) = ${key}
                         and user_id = ${user_id}`, function (error, results, fields)
     {
       if (error)
@@ -64,16 +65,17 @@ router.post('/chusername', function(req, res, next)
 {
   utils.session_exists(connection, req, res, function (user_id)
   {
-    let user = req.body.user
-    let user_valid = utils.validate_username(user)
+    let user = utils.sanitize(req.body.user)
+    let pass = utils.sanitize(req.body.pass)
+    let user_valid = utils.validate_username(req.body.user)
     if (user_valid != 'valid')
     {
       res.redirect(`/settings?error_text=${user_valid}`)
     }
     else
     {
-      connection.query(`UPDATE users SET username = ${utils.sanitize(user)}
-                        WHERE id = ${user_id} and password = password(${utils.sanitize(req.body.pass)})`, function (error, results, fields)
+      connection.query(`UPDATE users SET username = ${user}
+                        WHERE id = ${user_id} and password = password(${pass})`, function (error, results, fields)
       {
         if (error)
         {
@@ -83,7 +85,7 @@ router.post('/chusername', function(req, res, next)
         else
         {
           connection.query(`SELECT username FROM users
-                            WHERE id = ${user_id} and username = ${utils.sanitize(user)}`, function (error, results, fields)
+                            WHERE id = ${user_id} and username = ${user}`, function (error, results, fields)
           {
             if (error) 
             {
@@ -110,16 +112,17 @@ router.post('/chpassword', function(req, res, next)
 {
   utils.session_exists(connection, req, res, function (user_id)
   {
-    let pass = req.body.new1
-    let pass_valid = utils.validate_password(pass, req.body.new2)
+    let old = utils.sanitize(req.body.old)
+    let pass = utils.sanitize(req.body.new1)
+    let pass_valid = utils.validate_password(req.body.new1, req.body.new2)
     if (pass_valid != 'valid')
     {
       res.redirect(`/settings?error_text=${pass_valid}`)
     }
     else
     {
-      connection.query(`UPDATE users SET password = password(${utils.sanitize(pass)})
-                        WHERE id = ${user_id} and password = password(${utils.sanitize(req.body.old)})`, function (error, results, fields)
+      connection.query(`UPDATE users SET password = password(${pass})
+                        WHERE id = ${user_id} and password = password(${old})`, function (error, results, fields)
       {
         if (error) 
         {
@@ -129,7 +132,7 @@ router.post('/chpassword', function(req, res, next)
         else
         {
           connection.query(`SELECT username FROM users
-                            WHERE id = ${user_id} and password = password(${utils.sanitize(pass)})`, function (error, results, fields)
+                            WHERE id = ${user_id} and password = password(${pass})`, function (error, results, fields)
           {
             if (error) 
             {
@@ -348,8 +351,9 @@ router.get('/delete-account', function(req, res, next)
 {
   utils.session_exists(connection, req, res, function (user_id)
   {
+    let pass = utils.sanitize(req.query.password)
     connection.query(`SELECT username FROM users
-                      WHERE id = ${user_id} and password = password(${utils.sanitize(req.query.password)})`, function (error, results, fields)
+                      WHERE id = ${user_id} and password = password(${pass})`, function (error, results, fields)
     {
       if (error)
       {

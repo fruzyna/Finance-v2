@@ -16,8 +16,10 @@ router.get('/', function(req, res, next)
 router.post('/', function(req, res, next)
 {
   let user = utils.sanitize(req.body.user)
+  let pass = utils.sanitize(req.body.pass)
+
   connection.query(`SELECT id FROM users
-                    WHERE username = ${user} and password = password(${utils.sanitize(req.body.pass)})`, function (error, results, fields)
+                    WHERE username = ${user} and password = password(${pass})`, function (error, results, fields)
   {
     if (error) 
     {
@@ -27,9 +29,11 @@ router.post('/', function(req, res, next)
     else if (results.length > 0)
     {
       let uid = utils.sanitize(results[0].id)
-      let key = utils.generate_key()
+      let key = utils.sanitize(utils.generate_key())
+      let agent = utils.sanitize(req.headers['user-agent'])
+
       connection.query(`INSERT INTO sessions (session_key, user_id, last_accessed, description)
-                        VALUES (${utils.sanitize(key)}, ${uid}, now(), ${utils.sanitize(req.headers['user-agent'])})`, function (error, results, fields)
+                        VALUES (${key}, ${uid}, now(), ${agent})`, function (error, results, fields)
       {
         if (error)
         {
@@ -52,10 +56,11 @@ router.post('/', function(req, res, next)
 
 router.post('/create', function(req, res, next)
 {
-  let user = req.body.user
-  let pass = req.body.pass1
-  let user_valid = utils.validate_username(user)
-  let pass_valid = utils.validate_password(pass, req.body.pass2)
+  let user = utils.sanitize(req.body.user)
+  let pass = utils.sanitize(req.body.pass1)
+  let user_valid = utils.validate_username(req.body.user)
+  let pass_valid = utils.validate_password(req.body.pass1, req.body.pass2)
+
   if (user_valid != 'valid')
   {
     res.redirect(`/login?error_text=${user_valid}`)
@@ -67,7 +72,7 @@ router.post('/create', function(req, res, next)
   else
   {
     connection.query(`INSERT INTO users (username, password)
-                      VALUES (${utils.sanitize(user)}, password(${utils.sanitize(pass)}))`, function (error, results, fields)
+                      VALUES (${user}, password(${pass}))`, function (error, results, fields)
     {
       if (error) 
       {
@@ -77,7 +82,7 @@ router.post('/create', function(req, res, next)
       else
       {
         connection.query(`SELECT id FROM users
-                          WHERE username = ${utils.sanitize(user)} and password = password(${utils.sanitize(pass)})`, function (error, results, fields)
+                          WHERE username = ${user} and password = password(${pass})`, function (error, results, fields)
         {
           if (error) 
           {
@@ -86,10 +91,12 @@ router.post('/create', function(req, res, next)
           }
           else
           {
-            let uid = results[0].id
-            let key = utils.generate_key()
+            let uid = utils.sanitize(results[0].id)
+            let key = utils.sanitize(utils.generate_key())
+            let agent = utils.sanitize(req.headers['user-agent'])
+            
             connection.query(`INSERT INTO sessions (session_key, user_id, last_accessed, description)
-                              VALUES (${utils.sanitize(key)}, ${utils.sanitize(uid)}, now(), ${utils.sanitize(req.headers['user-agent'])})`, function (error, results, fields)
+                              VALUES (${key}, ${uid}, now(), ${agent})`, function (error, results, fields)
             {
               if (error)
               {
