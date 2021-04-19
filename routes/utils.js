@@ -44,7 +44,7 @@ function session_exists(connection, req, res, response)
     {
         // check if session key is valid
         connection.query(`SELECT user_id FROM sessions
-                          WHERE session_key = "${session}"`, function (error, results, fields)
+                          WHERE session_key = ${session}`, function (error, results, fields)
         {
             if (error)
             {
@@ -54,7 +54,7 @@ function session_exists(connection, req, res, response)
             {
                 // update the last time this key was accessed
                 connection.query(`UPDATE sessions SET last_accessed = now()
-                                  WHERE session_key = "${session}"`)
+                                  WHERE session_key = ${session}`)
 
                 // respond to request
                 response(sanitize(results[0].user_id))
