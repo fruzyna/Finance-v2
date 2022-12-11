@@ -11,7 +11,7 @@ services:
       - MYSQL_DATABASE={database_name}
       - MYSQL_USER={username}
     volumes:
-      - {mount_point}:/var/lib/mysql
+      - {db_mount_point}:/var/lib/mysql
       - /etc/localtime:/etc/localtime:ro
     ports:
       - 3306:3306
@@ -25,4 +25,14 @@ services:
     volumes: {repo_file_location}:/app
     ports:
       - 80:3000
+    restart: unless-stopped
+
+  # optional: used to manage db
+  adminer:
+    image: adminer
+    container_name: adminer
+    depends_on:
+      - finance-db
+    ports:
+      - 8080:8080
     restart: unless-stopped
