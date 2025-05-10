@@ -1,7 +1,0 @@
-{
-    "connectionLimit":  10,
-    "host":             "finance-db",
-    "user":             "{username}",
-    "password":         "{user_password}",
-    "database":         "{database_name}"
-}
